@@ -23,6 +23,7 @@ RUN \
 		eyed3 \
 		beets \
 		python3 \
+		ffmpeg \
 		python3-pip \
 		libchromaprint-tools \
 		imagemagick \
