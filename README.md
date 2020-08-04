@@ -31,7 +31,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e PUID=1000` | for UserID - see below for explanation |
 | `-e PGID=1000` | for GroupID - see below for explanation |
 | `-v /config` | Configuration files for Lidarr. |
-| `-e DOWNLOADS="/path/to/downloads"` | Destination location for temporary downloaded files :: IMPORTANT!!! lidarr needs access to this directory... |
+| `-e DOWNLOADS="/path/to/downloads"` | Destination location for temporary downloaded files :: <strong>IMPORTANT!!!</strong> lidarr needs access to this directory... Also add a matching volume for the location...|
 | `-e AUTOSTART="true"` | true = Enabled :: Runs script automatically on startup |
 | `-e LidarrUrl="http://127.0.0.1:8686"` | Set domain or IP to your Lidarr instance including port. If using reverse proxy, do not use a trailing slash. Ensure you specify http/s. |
 | `-e LidarrAPIkey="08d108d108d108d108d108d108d108d1"` | Lidarr API key. |
