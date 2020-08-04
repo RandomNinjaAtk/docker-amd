@@ -7,6 +7,14 @@
 ### Audio (AMD) + Video (AMVD) (Plex Example)
 ![](https://raw.githubusercontent.com/RandomNinjaAtk/Scripts/master/images/plex-musicvideos.png)
 
+## Features
+* Downloading **Music** using online sources for use in popular applications (Plex/Kodi/Emby/Jellyfin): 
+  * Searches for downloads based on Lidarr's album wanted list
+  * Downloads using a third party download client automatically
+  * FLAC / MP3 (320/120) Download Quality
+  * Notifies Lidarr to automatically import downloaded files
+  * Music is properly tagged and includes coverart before Lidarr Receives them (Third Party Download Client handles it)
+
 ## Supported Architectures
 
 The architectures supported by this image are:
