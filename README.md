@@ -4,7 +4,7 @@
 
 [![RandomNinjaAtk/amd](https://raw.githubusercontent.com/RandomNinjaAtk/unraid-templates/master/randomninjaatk/img/amd.png)](https://github.com/RandomNinjaAtk/docker-amd)
 
-### Audio (AMD) + Video (AMVD) (Plex Example )
+### Audio (AMD) + Video (AMVD) (Plex Example)
 ![](https://raw.githubusercontent.com/RandomNinjaAtk/Scripts/master/images/plex-musicvideos.png)
 
 ## Supported Architectures
