@@ -425,8 +425,16 @@ WantedMode () {
 	done
 }
 
+CleanupFailedImports () {
+	if ! [[ $(find "$DOWNLOADS/amd/import" -mindepth 1 -type d -mmin +480 -print) ]]; then
+		find "$DOWNLOADS/amd/import" -mindepth 1 -type d -mmin +480 -print -exec rm -rf "{}" \; &> /dev/null
+	fi
+
+}
+
 Configuration
 CacheEngine
+CleanupFailedImports
 WantedMode
 
 exit 0
