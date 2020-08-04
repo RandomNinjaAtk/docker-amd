@@ -15,10 +15,10 @@ Configuration () {
 	error=0
 
 	if [ "$AUTOSTART" = "true" ]; then
-        echo "Automatic Start: ENABLED"
-    else
-        echo "Automatic Start: DISABLED"
-    fi
+		echo "Automatic Start: ENABLED"
+	else
+		echo "Automatic Start: DISABLED"
+	fi
     
     # Verify Musicbrainz DB Connectivity
 	musicbrainzdbtest=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/artist/f59c5520-5f46-4d2c-b2c4-822eabf53419?fmt=json")
@@ -153,85 +153,7 @@ CacheEngine () {
 			echo "${artistnumber} of ${wantedtotal} :: MBZDB CACHE :: $LidArtistNameCap :: Musicbrainz Artist Info Cache Valid..."
 		fi
 		
-		records=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/recording?artist=$mbid&limit=1&offset=0&fmt=json")
-		sleep $MBRATELIMIT
 		
-		
-		newrecordingcount=$(echo "${records}"| jq -r '."recording-count"')
-
-				
-		if [ ! -f "/config/cache/$sanatizedartistname-$mbid-recording-count.json" ]; then
-			curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/recording?artist=$mbid&limit=1&offset=0&fmt=json" -o "/config/cache/$sanatizedartistname-$mbid-recording-count.json"
-			sleep $MBRATELIMIT
-		fi
-
-		recordingcount=$(cat "/config/cache/$sanatizedartistname-$mbid-recording-count.json" | jq -r '."recording-count"')
-
-		if [ $newrecordingcount != $recordingcount ]; then
-			echo "$artistnumber of $wantedtotal :: MBZDB CACHE :: $LidArtistNameCap :: Cache needs update, cleaning..."
-		
-			if [ -f "/config/cache/$sanatizedartistname-$mbid-recordings.json" ]; then
-				rm "/config/cache/$sanatizedartistname-$mbid-recordings.json"
-			fi
-		
-			if [ -f "/config/cache/$sanatizedartistname-$mbid-recording-count.json" ]; then
-				rm "/config/cache/$sanatizedartistname-$mbid-recording-count.json"
-			fi
-		
-			if [ -f "/config/cache/$sanatizedartistname-$mbid-video-recordings.json" ]; then
-				rm "/config/cache/$sanatizedartistname-$mbid-video-recordings.json"
-			fi
-		
-			if [ ! -f "/config/cache/$sanatizedartistname-$mbid-recording-count.json" ]; then
-				curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/recording?artist=$mbid&limit=1&offset=0&fmt=json" -o "/config/cache/$sanatizedartistname-$mbid-recording-count.json"
-				sleep $MBRATELIMIT
-			fi
-		else
-			if [ ! -f "/config/cache/$sanatizedartistname-$mbid-recordings.json" ]; then
-				echo "$artistnumber of $wantedtotal :: MBZDB CACHE :: $LidArtistNameCap :: Caching MBZDB $recordingcount Recordings..."
-			else
-				echo "$artistnumber of $wantedtotal :: MBZDB CACHE :: $LidArtistNameCap :: MBZDB Recording Cache Is Valid..."
-			fi
-		fi
-
-		if [ ! -f "/config/cache/$sanatizedartistname-$mbid-recordings.json" ]; then
-			if [ ! -d "/config/temp" ]; then
-				mkdir "/config/temp"
-				sleep 0.1
-			fi	
-		
-			offsetcount=$(( $recordingcount / 100 ))
-			for ((i=0;i<=$offsetcount;i++)); do
-				if [ ! -f "recording-page-$i.json" ]; then
-					if [ $i != 0 ]; then
-						offset=$(( $i * 100 ))
-						dlnumber=$(( $offset + 100))
-					else
-						offset=0
-						dlnumber=$(( $offset + 100))
-					fi
-	
-					echo "$artistnumber of $wantedtotal :: MBZDB CACHE :: $LidArtistNameCap :: Downloading page $i... ($offset - $dlnumber Results)"
-					curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/recording?artist=$mbid&inc=url-rels&limit=100&offset=$offset&fmt=json" -o "/config/temp/$mbid-recording-page-$i.json"
-					sleep $MBRATELIMIT
-				fi
-			done
-
-			if [ ! -f "/config/cache/$sanatizedartistname-recordings.json" ]; then
-				jq -s '.' /config/temp/$mbid-recording-page-*.json > "/config/cache/$sanatizedartistname-$mbid-recordings.json"
-			fi
-
-			if [ -f "/config/cache/$sanatizedartistname-$mbid-recordings.json" ]; then
-				rm /config/temp/$mbid-recording-page-*.json
-				sleep .01
-			fi
-
-			if [ -d "/config/temp" ]; then
-				sleep 0.1
-				rm -rf "/config/temp"
-			fi
-		fi
-
 		releases=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/release?artist=$mbid&inc=genres+recordings+url-rels+release-groups&limit=1&offset=0&fmt=json")
 		sleep $MBRATELIMIT
 		newreleasecount=$(echo "${releases}"| jq -r '."release-count"')
