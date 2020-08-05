@@ -235,6 +235,8 @@ WantedMode () {
 		lidarralbumdata=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/album?albumIds=${lidarralbumid}")
 		lidarralbumdrecordids=($(echo "${lidarralbumdata}" | jq '.[] | .releases | .[] | .id'))
 		albumreleasegroupmbzid=$(echo "${lidarralbumdata}"| jq -r '.[] | .foreignAlbumId')
+		lidarralbumtype="$(echo "${lidarralbumdata}"| jq -r '.[] | .albumType')"
+		lidarralbumtypelower="$(echo ${lidarralbumtype,,})"
 		albumtitle="$(echo "${lidarralbumdata}"| jq -r '.[] | .title')"
 		albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 		albumartistmbzid=$(echo "${lidarralbumdata}"| jq -r '.[].artist.foreignArtistId')
@@ -243,7 +245,7 @@ WantedMode () {
 		artistcleans="$(echo "$albumartistname" | sed -e 's/["”“]//g')"
 		albumartistnamesearch="$(jq -R -r @uri <<<"${artistcleans}")"
 		albumartistpath=$(echo "${lidarralbumdata}"| jq -r '.[].artist.path')
-		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $albumtitle"
+		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $lidarralbumtype :: $albumtitle"
 		if [ -f "/config/logs/notfound.log" ]; then
 			if cat "/config/logs/notfound.log" | grep -i "$albumreleasegroupmbzid" | read; then
 				echo "$logheader :: PREVOUSLY NOT FOUND SKIPPING..."
@@ -257,7 +259,7 @@ WantedMode () {
 		if [ "$albumartistname" !=	"Various Artists" ]; then
 			albuartistreleasedata=$(find "/config/cache" -type f -iname "*-$albumartistmbzid-releases.json" -exec cat {} \;)
 			albumdeezerurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"deezer\")).resource" | head -n 1)"
-			albumtidalurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"tidal\")).resource" | head -n 1)"
+			# albumtidalurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"tidal\")).resource" | head -n 1)"
 		fi
 		if [[ -z "$albumdeezerurl" && -z "$albumtidalurl" ]]; then
 			echo "$logheader :: FUZZY SEARCHING..."
@@ -276,7 +278,21 @@ WantedMode () {
 					deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
 				fi
-				deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r '.data[].album.id' | head -n 1)"
+				deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | sort_by(.album.title) | .[] | select(.album.type==\"$lidarralbumtypelower\") | .album.id" | head -n 1)"
+
+				if [ -z "$deezersearchalbumid" ]; then
+					deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | sort_by(.album.title) | .[] | select(.album.type==\"album\") | .album.id" | head -n 1)"
+				fi
+				if [ -z "$deezersearchalbumid" ]; then
+					deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | sort_by(.album.title) | .[] | select(.album.type==\"ep\") | .album.id" | head -n 1)"
+				fi
+				if [ -z "$deezersearchalbumid" ]; then
+					deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | sort_by(.album.title) | .[] | select(.album.type==\"single\") | .album.id" | head -n 1)"
+				fi
+				if [ -z "$deezersearchalbumid" ]; then
+					deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | sort_by(.album.title) | .[].album.id" | head -n 1)"
+				fi
+
 				if [ ! -z "$deezersearchalbumid" ]; then
 					albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
 					error=0
@@ -288,6 +304,7 @@ WantedMode () {
 		else
 			error=0
 		fi
+		
 		if [ $error == 1 ]; then
 			echo "$logheader :: ERROR :: No deezer album url found"
 			echo "$albumartistname :: $albumreleasegroupmbzid :: $albumtitle"  >> "/config/logs/notfound.log"
