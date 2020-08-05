@@ -342,7 +342,9 @@ WantedMode () {
 		else
 			echo "$albumdeezerurl"  >> "/config/logs/download.log"
 		fi
-
+		
+		TagFix
+		
 		if [ ! -d "$DOWNLOADS/amd/import" ]; then
 			mkdir -p "$DOWNLOADS/amd/import"
 			chmod $FolderPermissions "$DOWNLOADS/amd/import"
@@ -389,6 +391,34 @@ SetFolderPermissions () {
 	
 	if [ -d "$DOWNLOADS/amd" ]; then
 		chmod $FolderPermissions "$DOWNLOADS/amd"
+	fi
+}
+
+TagFix () {
+	if find "$DOWNLOADS/amd/dlclient" -iname "*.flac" | read; then
+		if ! [ -x "$(command -v metaflac)" ]; then
+			echo "ERROR: FLAC verification utility not installed (ubuntu: apt-get install -y flac)"
+		else
+			for fname in "$DOWNLOADS"/amd/dlclient/*.flac; do
+				filename="$(basename "$fname")"				
+				metaflac "$fname" --remove-tag=ALBUMARTIST
+				metaflac "$fname" --set-tag=ALBUMARTIST="$albumartistname"
+				metaflac "$fname" --set-tag=MUSICBRAINZ_ALBUMARTISTID="$albumartistmbzid"
+				echo "$logheader :: FIXING TAGS :: $filename fixed..."
+			done
+		fi
+	fi
+	if find "$DOWNLOADS/amd/dlclient" -iname "*.mp3" | read; then
+		if ! [ -x "$(command -v eyeD3)" ]; then
+			echo "eyed3 verification utility not installed (ubuntu: apt-get install -y eyed3)"
+		else
+			for fname in "$DOWNLOADS"/amd/dlclient/*.mp3; do
+				filename="$(basename "$fname")"
+				eyeD3 "$fname" -b "$albumartistname" &> /dev/null
+				eyeD3 "$fname" --user-text-frame="MusicBrainz Album Artist Id:$albumartistmbzid" &> /dev/null
+				echo "$logheader :: FIXING TAGS :: $filename fixed..."
+			done
+		fi
 	fi
 }
 
