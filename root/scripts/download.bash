@@ -217,11 +217,8 @@ CacheEngine () {
 
 		mbzartistinfo="$(cat "/config/cache/$sanatizedartistname-$mbid-info.json")"
 		deezerurl="$(echo "$mbzartistinfo" | jq -r ".relations | .[] | .url | select(.resource | contains(\"deezer\")) | .resource")"
-		if [ ! -z "$deezerurl" ]; then
-			echo "$deezerurl"
-        fi
 		touch "/config/cache/$sanatizedartistname-$mbid-cache-complete"
-    done
+	done
 }
 
 WantedMode () {
