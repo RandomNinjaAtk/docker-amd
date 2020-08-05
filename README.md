@@ -72,4 +72,5 @@ Container images are configured using parameters passed at runtime (such as thos
 - [Original Idea based on lidarr-download-automation by Migz93](https://github.com/Migz93/lidarr-download-automation)
 - [Deemix download client](https://deemix.app/)
 - [Musicbrainz](https://musicbrainz.org/)
+- [Lidarr](https://lidarr.audio/)
 - Icons made by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
