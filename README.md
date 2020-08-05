@@ -47,6 +47,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e MBRATELIMIT=1` | OPTIONAL: musicbrainz rate limit, musicbrainz allows only 1 connection per second, max setting is 10 |
 | `-e ARL_TOKEN="08d108d108d108d108d108d108d108d1"` | User token for dl client, for instructions to obtain token: https://notabug.org/RemixDevs/DeezloaderRemix/wiki/Login+via+userToken |
 | `-e quality=FLAC` | FLAC or 320 or 128 :: 320/128 are MP3 downloads, FLAC is lossless... |
+| `-e ExplicitPreferred=true` | true = enabled :: when fuzzy searching, explicit results are processed first, if not found, fallback to all results for possible match |
 | `-e FolderPermissions=766` | Based on chmod linux permissions |
 | `-e FilePermissions=666` | Based on chmod linux permissions |
 
