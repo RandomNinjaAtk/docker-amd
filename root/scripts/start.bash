@@ -17,7 +17,7 @@ for (( ; ; )); do
     if [ -f "/config/logs/log-cleanup" ]; then
         rm "/config/logs/log-cleanup"
     fi
-    sleep 30
+    sleep 15m
 done
 
 exit 0
