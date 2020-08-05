@@ -86,6 +86,12 @@ Configuration () {
 		quality="FLAC"
 	fi
 
+	if [ "$ExplicitPreferred" == "true" ]; then
+		echo "Audio Explicit Preferred: ENABLED"
+	else
+		echo "Audio Explicit Preferred: DISABLED"
+	fi
+
 	if [ ! -z "$FilePermissions" ]; then
         echo "Audio: File Permissions: $FilePermissions"
 	else
@@ -238,6 +244,8 @@ WantedMode () {
 		lidarralbumtype="$(echo "${lidarralbumdata}"| jq -r '.[] | .albumType')"
 		lidarralbumtypelower="$(echo ${lidarralbumtype,,})"
 		albumtitle="$(echo "${lidarralbumdata}"| jq -r '.[] | .title')"
+		albumreleasedate="$(echo "${lidarralbumdata}"| jq -r '.[] | .releaseDate')"
+		albumreleaseyear="${albumreleasedate:0:4}"
 		albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 		albumartistmbzid=$(echo "${lidarralbumdata}"| jq -r '.[].artist.foreignArtistId')
 		albumartistname=$(echo "${lidarralbumdata}"| jq -r '.[].artist.artistName')
@@ -245,7 +253,9 @@ WantedMode () {
 		artistcleans="$(echo "$albumartistname" | sed -e 's/["”“]//g')"
 		albumartistnamesearch="$(jq -R -r @uri <<<"${artistcleans}")"
 		albumartistpath=$(echo "${lidarralbumdata}"| jq -r '.[].artist.path')
-		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $lidarralbumtype :: $albumtitle"
+		albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
+		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
+		filelogheader="$albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
 		if [ -f "/config/logs/notfound.log" ]; then
 			if cat "/config/logs/notfound.log" | grep -i "$albumreleasegroupmbzid" | read; then
 				echo "$logheader :: PREVOUSLY NOT FOUND SKIPPING..."
@@ -256,6 +266,12 @@ WantedMode () {
 		else
 			echo "$logheader :: SEARCHING..."
 		fi
+		
+		if [  -d "$albumbimportfolder" ]; then
+			echo "$logheader :: Already Downloaded, skipping..."
+			continue
+		fi
+
 		if [ "$albumartistname" !=	"Various Artists" ]; then
 			albuartistreleasedata=$(find "/config/cache" -type f -iname "*-$albumartistmbzid-releases.json" -exec cat {} \;)
 			albumdeezerurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"deezer\")).resource" | head -n 1)"
@@ -271,6 +287,8 @@ WantedMode () {
 				albumtitlecleans="$(echo "$albumtitle" | sed -e 's/["”“]//g')"
 				albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 				albumtitlesearch="$(jq -R -r @uri <<<"${albumtitlecleans}")"
+				deezersearchalbumid=""
+				deezeralbumid=""
 				if [ "$albumartistname" !=	"Various Artists" ]; then
 					deezersearchurl="https://api.deezer.com/search?q=artist:%22${albumartistnamesearch}%22%20album:%22${albumtitlesearch}%22"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
@@ -278,23 +296,67 @@ WantedMode () {
 					deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
 				fi
-				deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | sort_by(.album.title) | .[] | select(.album.type==\"$lidarralbumtypelower\") | .album.id" | head -n 1)"
 
+				deezersearchcount="$(echo "$deezeralbumsearchdata" | jq -r ".total")"
+				if [ "$deezersearchcount" == "0" ]; then
+					if [ "$albumartistname" !=	"Various Artists" ]; then
+						deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22"
+						deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
+						searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.album.title) | .[] | select(.artist.name | contains(\"$artistcleans\"))")"
+					else
+						error=1
+						continue
+					fi
+				else
+					searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.album.title) | .[]")"
+				fi
+
+				if [ "$ExplicitPreferred" == "true" ]; then
+					if [ -z "$deezersearchalbumid" ]; then
+						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | select(.album.type==\"$lidarralbumtypelower\") | .album.id" | head -n 1)"
+					fi
+					if [ -z "$deezersearchalbumid" ]; then
+						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | select(.album.type==\"album\") | .album.id" | head -n 1)"
+					fi
+					if [ -z "$deezersearchalbumid" ]; then
+						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | select(.album.type==\"ep\") | .album.id" | head -n 1)"
+					fi
+					if [ -z "$deezersearchalbumid" ]; then
+						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | select(.album.type==\"single\") | .album.id" | head -n 1)"
+					fi
+					if [ -z "$deezersearchalbumid" ]; then
+						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | .album.id" | head -n 1)"
+					fi
+					if [ ! -z "$deezersearchalbumid" ]; then
+						explicit="true"
+					else
+						explicit="false"
+					fi
+				fi
+				
 				if [ -z "$deezersearchalbumid" ]; then
-					deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | sort_by(.album.title) | .[] | select(.album.type==\"album\") | .album.id" | head -n 1)"
+					deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.album.type==\"$lidarralbumtypelower\") | .album.id" | head -n 1)"
 				fi
 				if [ -z "$deezersearchalbumid" ]; then
-					deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | sort_by(.album.title) | .[] | select(.album.type==\"ep\") | .album.id" | head -n 1)"
+					deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.album.type==\"album\") | .album.id" | head -n 1)"
 				fi
 				if [ -z "$deezersearchalbumid" ]; then
-					deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | sort_by(.album.title) | .[] | select(.album.type==\"single\") | .album.id" | head -n 1)"
+					deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.album.type==\"ep\") | .album.id" | head -n 1)"
 				fi
 				if [ -z "$deezersearchalbumid" ]; then
-					deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | sort_by(.album.title) | .[].album.id" | head -n 1)"
+					deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.album.type==\"single\") | .album.id" | head -n 1)"
+				fi
+				if [ -z "$deezersearchalbumid" ]; then
+					deezersearchalbumid="$(echo "$searchdata" | jq -r ".album.id" | head -n 1)"
+				fi
+
+				if [ "$explicit" == "true" ]; then
+					echo "$logheader :: Explicit Release Found"
 				fi
 
 				if [ ! -z "$deezersearchalbumid" ]; then
 					albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
+					deezeralbumid="$(echo "${albumdeezerurl}" | grep -o '[[:digit:]]*')"
 					error=0
 					break
 				else
@@ -312,25 +374,31 @@ WantedMode () {
 		fi
 
 		if [ -f "/config/logs/download.log" ]; then
-			if cat "/config/logs/download.log" | grep -i "$albumdeezerurl" | read; then
+			if cat "/config/logs/download.log" | grep -i "$filelogheader :: $albumdeezerurl" | read; then
 				echo "$logheader :: Already Downloaded"
 				continue
 			fi
 		fi
 
 		deezeralbumid="$(echo "${albumdeezerurl}" | grep -o '[[:digit:]]*')"
-		albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean (WEB)-$deezeralbumid-deemix"
 
 		if [ ! -d "$albumbimportfolder" ]; then
 			chmod 0777 -R "${PathToDLClient}"
 			currentpwd="$(pwd)"
-			echo "$logheader :: DOWNLOADING :: $albumdeezerurl"
-			if cd "${PathToDLClient}" && python3 -m deemix -b $quality "$albumdeezerurl" &> /dev/null && cd "${currentpwd}"; then
-				echo "$logheader :: DOWNLOAD :: success"
-				echo "$albumdeezerurl"  >> "/config/logs/download.log"
+			echo "$logheader :: DOWNLOADING :: $albumdeezerurl..."
+			if cd "${PathToDLClient}" && python3 -m deemix -b $quality "$albumdeezerurl" && cd "${currentpwd}"; then
+				sleep 0.5
+				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+					echo "$logheader :: DOWNLOAD :: success"
+					echo "$filelogheader :: $albumdeezerurl"  >> "/config/logs/download.log"
+				else
+					echo "$logheader :: DOWNLOAD :: ERROR :: No files found"
+					echo "$filelogheader :: $albumdeezerurl"  >> "/config/logs/error.log"
+					continue
+				fi
 			fi
 
-			file=$(find "$DOWNLOADS/amd/dlclient" -iregex ".*/.*\.\(flac\|mp3\|opus\|m4a\)" | head -n 1)
+			file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
 			if [ ! -z "$file" ]; then
 				artwork="$(dirname "$file")/folder.jpg"
 				if ffmpeg -y -i "$file" -c:v copy "$artwork" 2>/dev/null; then
@@ -340,7 +408,7 @@ WantedMode () {
 				fi
 			fi
 		else
-			echo "$albumdeezerurl"  >> "/config/logs/download.log"
+			echo "$filelogheader :: $albumdeezerurl"  >> "/config/logs/download.log"
 		fi
 		
 		TagFix
@@ -377,7 +445,9 @@ CreateDownloadFolders () {
 	
 	if [ ! -d "$DOWNLOADS/amd/dlclient" ]; then
 		mkdir -p "$DOWNLOADS/amd/dlclient"
-	fi		
+	else
+		rm 	"$DOWNLOADS"/amd/dlclient/* &> /dev/null
+	fi
 }
 
 SetFolderPermissions () {
