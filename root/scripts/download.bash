@@ -236,12 +236,12 @@ WantedMode () {
 		lidarralbumdrecordids=($(echo "${lidarralbumdata}" | jq '.[] | .releases | .[] | .id'))
 		albumreleasegroupmbzid=$(echo "${lidarralbumdata}"| jq -r '.[] | .foreignAlbumId')
 		albumtitle="$(echo "${lidarralbumdata}"| jq -r '.[] | .title')"
-		albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g')"
-		albumtitlesearch="$(jq -R -r @uri <<<"${albumclean}")"
+		albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 		albumartistmbzid=$(echo "${lidarralbumdata}"| jq -r '.[].artist.foreignArtistId')
 		albumartistname=$(echo "${lidarralbumdata}"| jq -r '.[].artist.artistName')
-		artistclean="$(echo "$albumartistname" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g')"
-		albumartistnamesearch="$(jq -R -r @uri <<<"${artistclean}")"
+		artistclean="$(echo "$albumartistname" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
+		artistcleans="$(echo "$albumartistname" | sed -e 's/["”“]//g')"
+		albumartistnamesearch="$(jq -R -r @uri <<<"${artistcleans}")"
 		albumartistpath=$(echo "${lidarralbumdata}"| jq -r '.[].artist.path')
 		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $albumtitle"
 		if [ -f "/config/logs/notfound.log" ]; then
@@ -258,9 +258,6 @@ WantedMode () {
 			albuartistreleasedata=$(find "/config/cache" -type f -iname "*-$albumartistmbzid-releases.json" -exec cat {} \;)
 			albumdeezerurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"deezer\")).resource" | head -n 1)"
 			albumtidalurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"tidal\")).resource" | head -n 1)"
-		else
-			albumartistname="$(echo "$albumartistname" | sed 's/ (USA)//g')"
-			albumartistnamesearch="$(echo "$albumartistname" | sed 's/\ /%20/g')"
 		fi
 		if [[ -z "$albumdeezerurl" && -z "$albumtidalurl" ]]; then
 			echo "$logheader :: FUZZY SEARCHING..."
@@ -269,8 +266,9 @@ WantedMode () {
 				recordtitle="$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .title")"
 				recordmbrainzid=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .foreignReleaseId")
 				albumtitle="$recordtitle"
-				albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g')"
-				albumtitlesearch="$(jq -R -r @uri <<<"${albumclean}")"
+				albumtitlecleans="$(echo "$albumtitle" | sed -e 's/["”“]//g')"
+				albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
+				albumtitlesearch="$(jq -R -r @uri <<<"${albumtitlecleans}")"
 				if [ "$albumartistname" !=	"Various Artists" ]; then
 					deezersearchurl="https://api.deezer.com/search?q=artist:%22${albumartistnamesearch}%22%20album:%22${albumtitlesearch}%22"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
@@ -281,6 +279,7 @@ WantedMode () {
 				deezersearchalbumid="$(echo "$deezeralbumsearchdata" | jq -r '.data[].album.id' | head -n 1)"
 				if [ ! -z "$deezersearchalbumid" ]; then
 					albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
+					error=0
 					break
 				else
 					error=1
