@@ -1,6 +1,6 @@
 # AMD - Automated Music Downloader 
 
-[RandomNinjaAtk/amd](https://github.com/RandomNinjaAtk/docker-amd) AMD is a Lidarr Companion script to automatically download and tag music files for use in various media applications
+[RandomNinjaAtk/amd](https://github.com/RandomNinjaAtk/docker-amd) is a Lidarr companion script to automatically download music for Lidarr 
 
 [![RandomNinjaAtk/amd](https://raw.githubusercontent.com/RandomNinjaAtk/unraid-templates/master/randomninjaatk/img/amd.png)](https://github.com/RandomNinjaAtk/docker-amd)
 
