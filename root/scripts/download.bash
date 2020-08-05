@@ -332,7 +332,7 @@ WantedMode () {
 
 		if [ ! -d "$DOWNLOADS/amd/import" ]; then
 			mkdir -p "$DOWNLOADS/amd/import"
-			chmod 0777 -R "$DOWNLOADS/amd/import"
+			chmod $FolderPermissions "$DOWNLOADS/amd/import"
 		fi
 
 		if [ ! -d "$albumbimportfolder" ]; then
@@ -348,12 +348,39 @@ WantedMode () {
 }
 
 CleanupFailedImports () {
-	if ! [[ $(find "$DOWNLOADS/amd/import" -mindepth 1 -type d -mmin +480 -print) ]]; then
-		find "$DOWNLOADS/amd/import" -mindepth 1 -type d -mmin +480 -print -exec rm -rf "{}" \; &> /dev/null
+	if [ -d "$DOWNLOADS/amd/import" ]; then
+		if ! [[ $(find "$DOWNLOADS/amd/import" -mindepth 1 -type d -mmin +480 -print) ]]; then
+			find "$DOWNLOADS/amd/import" -mindepth 1 -type d -mmin +480 -print -exec rm -rf "{}" \; &> /dev/null
+		fi
 	fi
-
 }
 
+CreateDownloadFolders () {
+	if [ ! -d "$DOWNLOADS/amd/import" ]; then
+		mkdir -p "$DOWNLOADS/amd/import"
+	fi
+	
+	if [ ! -d "$DOWNLOADS/amd/dlclient" ]; then
+		mkdir -p "$DOWNLOADS/amd/dlclient"
+	fi		
+}
+
+SetFolderPermissions () {
+	if [ -d "$DOWNLOADS/amd/import" ]; then
+		chmod $FolderPermissions "$DOWNLOADS/amd/import"
+	fi
+	
+	if [ -d "$DOWNLOADS/amd/dlclient" ]; then
+		chmod $FolderPermissions "$DOWNLOADS/amd/dlclient"
+	fi
+	
+	if [ -d "$DOWNLOADS/amd" ]; then
+		chmod $FolderPermissions "$DOWNLOADS/amd"
+	fi
+}
+
+CreateDownloadFolders
+SetFolderPermissions
 Configuration
 CacheEngine
 CleanupFailedImports
