@@ -62,8 +62,6 @@ Container images are configured using parameters passed at runtime (such as thos
   * Contains the log output from the script
 * <strong>/config/cache</strong>
   * Contains the artist data cache to speed up processes
-* <strong>/config/coookies</strong>
-  * Store your cookies.txt file in this location, may be required for youtube-dl to work properly
 <br />
 <br />
 <br />
