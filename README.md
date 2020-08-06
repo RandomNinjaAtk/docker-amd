@@ -48,6 +48,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e ARL_TOKEN="08d108d108d108d108d108d108d108d1"` | User token for dl client, for instructions to obtain token: https://notabug.org/RemixDevs/DeezloaderRemix/wiki/Login+via+userToken |
 | `-e quality=FLAC` | FLAC or 320 or 128 :: 320/128 are MP3 downloads, FLAC is lossless... |
 | `-e ExplicitPreferred=true` | true = enabled :: when fuzzy searching, explicit results are processed first, if not found, fallback to all results for possible match |
+| `-e MatchDistance="10"` | Set as an integer, the higher the number, the more lienet it is. Example: A match score of 0 is a perfect match :: For more information, this score is produced using this function: [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance) |
 | `-e FolderPermissions=766` | Based on chmod linux permissions |
 | `-e FilePermissions=666` | Based on chmod linux permissions |
 
@@ -74,4 +75,5 @@ Container images are configured using parameters passed at runtime (such as thos
 - [Deemix download client](https://deemix.app/)
 - [Musicbrainz](https://musicbrainz.org/)
 - [Lidarr](https://lidarr.audio/)
+- [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance)
 - Icons made by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
