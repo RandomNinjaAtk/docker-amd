@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.04"
+	echo "############################################ SCRIPT VERSION 1.0.05"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -258,6 +258,7 @@ WantedMode () {
 		albumartistnamesearch="$(jq -R -r @uri <<<"${artistcleans}")"
 		albumartistpath=$(echo "${lidarralbumdata}"| jq -r '.[].artist.path')
 		albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
+		albumbimportfoldername="$(basename "$albumbimportfolder")"
 		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
 		filelogheader="$albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
 		if [ -f "/config/logs/notfound.log" ]; then
@@ -273,8 +274,8 @@ WantedMode () {
 		
 		if [  -d "$albumbimportfolder" ]; then
 			echo "$logheader :: Already Downloaded, skipping..."
-			LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${importalbumfolder}\"}")
-			echo "$logheader :: LIDARR IMPORT NOTIFICATION SENT! :: $albumbimportfolder"
+			LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${albumbimportfoldername}\"}")
+			echo "$logheader :: LIDARR IMPORT NOTIFICATION SENT! :: $albumbimportfoldername"
 			continue
 		fi
 
@@ -422,9 +423,8 @@ WantedMode () {
 			chmod $FilePermissions "$albumbimportfolder"/*
 			chown -R abc:abc "$albumbimportfolder"
 		fi
-		importalbumfolder="$albumbimportfolder"
-		LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${importalbumfolder}\"}")
-		echo "$logheader :: LIDARR IMPORT NOTIFICATION SENT! :: $albumbimportfolder"
+		LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${albumbimportfoldername}\"}")
+		echo "$logheader :: LIDARR IMPORT NOTIFICATION SENT! :: $albumbimportfoldername"
 	done
 	echo "############################################ DOWNLOAD AUDIO COMPLETE"
 }
