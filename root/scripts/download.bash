@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.12"
+	echo "############################################ SCRIPT VERSION 1.0.13"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -94,6 +94,14 @@ Configuration () {
 		echo "Audio Explicit Preferred: ENABLED"
 	else
 		echo "Audio Explicit Preferred: DISABLED"
+	fi
+
+    if [ ! -z "$MatchDistance" ]; then
+        echo "Audio: Match Distance: $MatchDistance"
+	else
+		echo "ERROR: MatchDistance not set, using default..."
+		MatchDistance="10"
+		echo "Audio: Match Distance: $MatchDistance"
 	fi
 
 	if [ ! -z "$FilePermissions" ]; then
@@ -340,8 +348,8 @@ WantedMode () {
                             deezerid=${deezersearchalbumid[$id]}
                             deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
                             diff=$(levenshtein "$recordtitle" "$deezeralbumtitle")
-                            if [ "$diff" -le "10" ]; then
-                                echo "$logheader :: $albumtitle vs $deezeralbumtitle = $diff :: $deezerid :: EXPLICIT :: MATCH"
+                            if [ "$diff" -le "$MatchDistance" ]; then
+                                echo "$logheader :: $albumtitle vs $deezeralbumtitle :: Distance = $diff :: $deezerid :: EXPLICIT :: MATCH"
 								deezersearchalbumid="$deezerid"
                                 break
                             else
@@ -365,8 +373,8 @@ WantedMode () {
                             deezerid=${deezersearchalbumid[$id]}
                             deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
                             diff=$(levenshtein "$recordtitle" "$deezeralbumtitle")
-                            if [ "$diff" -le "10" ]; then
-                                echo "$logheader :: $albumtitle vs $deezeralbumtitle = $diff :: $deezerid :: ALL :: MATCH"
+                            if [ "$diff" -le "$MatchDistance" ]; then
+                                echo "$logheader :: $albumtitle vs $deezeralbumtitle :: Distance = $diff :: $deezerid :: ALL :: MATCH"
                                 deezersearchalbumid="$deezerid"
                                 break
                             else
