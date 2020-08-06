@@ -21,7 +21,7 @@ The architectures supported by this image are:
 
 | Architecture | Tag |
 | :----: | --- |
-| x86-64 | amd64-latest |
+| x86-64 | latest |
 
 ## Version Tags
 
@@ -64,6 +64,29 @@ Container images are configured using parameters passed at runtime (such as thos
   * Contains the log output from the script
 * <strong>/config/cache</strong>
   * Contains the artist data cache to speed up processes
+
+<br />
+
+# Lidarr Configuration Recommendations
+
+## Media Management Settings:
+* Disable Track Naming
+  * Disabling track renaming enables synced lyrics that are imported as extras to be utilized by media players that support using them
+
+#### Track Naming:
+
+* Artist Folder: `{Artist Name}{ (Artist Disambiguation)}`
+* Album Folder: `{Artist Name}{ - ALBUM TYPE}{ - Release Year} - {Album Title}{ ( Album Disambiguation)}`
+
+#### Importing:
+* Enable Import Extra Files
+  * `lrc,jpg,png`
+
+#### File Management
+* Change File Date: Album Release Date
+ 
+#### Permissions
+* Enable Set Permissions
 <br />
 <br />
 <br />
