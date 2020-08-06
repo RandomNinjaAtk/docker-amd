@@ -277,6 +277,17 @@ WantedMode () {
 			albumdeezerurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"deezer\")).resource" | head -n 1)"
 			# albumtidalurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"tidal\")).resource" | head -n 1)"
 		fi
+		if [ ! -z "$albumdeezerurl" ]; then
+			deezeralbumid="$(echo "${albumdeezerurl}" | grep -o '[[:digit:]]*')"
+			deezeralbumsearchdata=$(curl -s "https://api.deezer.com/album/deezeralbumid${deezeralbumid}")
+			errocheck="$(echo "$deezeralbumsearchdata" | jq -r ".error.code")"
+			if [ "$errocheck" != "null" ]; then
+				echo "$logheader :: ERROR :: Provided URL is broken, fallback to fuzzy search..."
+				albumdeezerurl=""
+			fi
+		fi
+
+
 		if [[ -z "$albumdeezerurl" && -z "$albumtidalurl" ]]; then
 			echo "$logheader :: FUZZY SEARCHING..."
 			for id in "${!lidarralbumdrecordids[@]}"; do
@@ -288,7 +299,7 @@ WantedMode () {
 				albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 				albumtitlesearch="$(jq -R -r @uri <<<"${albumtitlecleans}")"
 				deezersearchalbumid=""
-				deezeralbumid=""
+				deezeralbumtitle=""
 				if [ "$albumartistname" !=	"Various Artists" ]; then
 					deezersearchurl="https://api.deezer.com/search?q=artist:%22${albumartistnamesearch}%22%20album:%22${albumtitlesearch}%22"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
@@ -356,7 +367,7 @@ WantedMode () {
 
 				if [ ! -z "$deezersearchalbumid" ]; then
 					albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
-					deezeralbumid="$(echo "${albumdeezerurl}" | grep -o '[[:digit:]]*')"
+					deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezersearchalbumid) | .album.title" | head -n 1)"
 					error=0
 					break
 				else
@@ -380,12 +391,14 @@ WantedMode () {
 			fi
 		fi
 
-		deezeralbumid="$(echo "${albumdeezerurl}" | grep -o '[[:digit:]]*')"
+		if [ -z "$deezeralbumtitle" ]; then
+			deezeralbumtitle="$albumtitle"
+		fi
 
 		if [ ! -d "$albumbimportfolder" ]; then
 			chmod 0777 -R "${PathToDLClient}"
 			currentpwd="$(pwd)"
-			echo "$logheader :: DOWNLOADING :: $albumdeezerurl..."
+			echo "$logheader :: DOWNLOADING :: $deezeralbumtitle :: $albumdeezerurl..."
 			if cd "${PathToDLClient}" && python3 -m deemix -b $quality "$albumdeezerurl" && cd "${currentpwd}"; then
 				sleep 0.5
 				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
