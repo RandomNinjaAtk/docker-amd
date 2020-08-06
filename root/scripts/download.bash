@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.06"
+	echo "############################################ SCRIPT VERSION 1.0.1"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -243,7 +243,10 @@ WantedMode () {
 		albumdeezerurl=""
 		error=0
 		lidarralbumdata=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/album?albumIds=${lidarralbumid}")
-		lidarralbumdrecordids=($(echo "${lidarralbumdata}" | jq '.[] | .releases | .[] | .id'))
+        OLDIFS="$IFS"
+    	IFS=$'\n'
+		lidarralbumdrecordids=($(echo "${lidarralbumdata}" | jq -r '.[] | .releases | .[] | .title' | sort -u))
+        IFS="$OLDIFS"
 		albumreleasegroupmbzid=$(echo "${lidarralbumdata}"| jq -r '.[] | .foreignAlbumId')
 		lidarralbumtype="$(echo "${lidarralbumdata}"| jq -r '.[] | .albumType')"
 		lidarralbumtypelower="$(echo ${lidarralbumtype,,})"
@@ -297,9 +300,9 @@ WantedMode () {
 		if [[ -z "$albumdeezerurl" && -z "$albumtidalurl" ]]; then
 			echo "$logheader :: FUZZY SEARCHING..."
 			for id in "${!lidarralbumdrecordids[@]}"; do
-				recordid=${lidarralbumdrecordids[$id]}
-				recordtitle="$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .title")"
-				recordmbrainzid=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .foreignReleaseId")
+				recordtitle=${lidarralbumdrecordids[$id]}
+				#recordtitle="$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .title")"
+				#recordmbrainzid=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .foreignReleaseId")
 				albumtitle="$recordtitle"
 				albumtitlecleans="$(echo "$albumtitle" | sed -e 's/["”“]//g' -e 's/‐/ /g')"
 				albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
@@ -319,19 +322,34 @@ WantedMode () {
 					if [ "$albumartistname" !=	"Various Artists" ]; then
 						deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22&limit=1000"
 						deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
-						searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.album.title) | .[] | select(.artist.name | contains(\"$artistcleans\"))")"
+						searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[] | select(.artist.name | contains(\"$artistcleans\"))")"
 					else
 						error=1
 						continue
 					fi
 				else
-					searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.album.title) | .[]")"
+					searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[]")"
 				fi
 
 				if [ "$ExplicitPreferred" == "true" ]; then
 					if [ -z "$deezersearchalbumid" ]; then
-						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | .album.id" | head -n 1)"
+						deezersearchalbumid=($(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | .album.id" | sort -u))
 					fi
+                    if [ ! -z "$deezersearchalbumid" ]; then
+                        for id in "${!deezersearchalbumid[@]}"; do
+                            deezerid=${deezersearchalbumid[$id]}
+                            albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
+                            deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
+                            diff=$(levenshtein "$recordtitle" "$deezeralbumtitle")
+                            if [ "$diff" -le "10" ]; then
+                                echo "$logheader :: $albumtitle vs $deezeralbumtitle = $diff :: $deezerid :: EXPLICIT :: MATCH"
+                                break
+                            else
+                                deezersearchalbumid=""
+                            fi
+                        done
+                    fi
+
 					if [ ! -z "$deezersearchalbumid" ]; then
 						explicit="true"
 					else
@@ -340,16 +358,29 @@ WantedMode () {
 				fi
 				
 				if [ -z "$deezersearchalbumid" ]; then
-					deezersearchalbumid="$(echo "$searchdata" | jq -r ".album.id" | head -n 1)"
+					deezersearchalbumid=($(echo "$searchdata" | jq -r ".album.id" | sort -u))
 				fi
+
+                if [ ! -z "$deezersearchalbumid" ]; then
+                    for id in "${!deezersearchalbumid[@]}"; do
+                        deezerid=${deezersearchalbumid[$id]}
+                        albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
+                        deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
+                        diff=$(levenshtein "$recordtitle" "$deezeralbumtitle")
+                        if [ "$diff" -le "10" ]; then
+                            echo "$logheader :: $albumtitle vs $deezeralbumtitle = $diff :: $deezerid :: ALL :: MATCH"
+                            break
+                        else
+                            deezersearchalbumid=""
+                        fi
+                    done
+                fi
 
 				if [ "$explicit" == "true" ]; then
 					echo "$logheader :: Explicit Release Found"
 				fi
 
 				if [ ! -z "$deezersearchalbumid" ]; then
-					albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
-					deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezersearchalbumid) | .album.title" | head -n 1)"
 					error=0
 					break
 				else
@@ -376,6 +407,9 @@ WantedMode () {
 		if [ -z "$deezeralbumtitle" ]; then
 			deezeralbumtitle="$albumtitle"
 		fi
+
+        albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
+		albumbimportfoldername="$(basename "$albumbimportfolder")"
 
 		if [ ! -d "$albumbimportfolder" ]; then
 			chmod 0777 -R "${PathToDLClient}"
@@ -492,6 +526,41 @@ TagFix () {
 			done
 		fi
 	fi
+}
+
+function levenshtein {
+    if (( $# != 2 )); then
+        echo "Usage: $0 word1 word2" >&2
+    elif (( ${#1} < ${#2} )); then
+        levenshtein "$2" "$1"
+    else
+        local str1len=${#1}
+        local str2len=${#2}
+        local d
+
+        for (( i = 0; i <= (str1len+1)*(str2len+1); i++ )); do
+            d[i]=0
+        done
+
+        for (( i = 0; i <= str1len; i++ )); do
+            d[i+0*str1len]=$i
+        done
+
+        for (( j = 0; j <= str2len; j++ )); do
+            d[0+j*(str1len+1)]=$j
+        done
+
+        for (( j = 1; j <= str2len; j++ )); do
+            for (( i = 1; i <= str1len; i++ )); do
+                [ "${1:i-1:1}" = "${2:j-1:1}" ] && local cost=0 || local cost=1
+                del=$(( d[(i-1)+str1len*j]+1 ))
+                ins=$(( d[i+str1len*(j-1)]+1 ))
+                alt=$(( d[(i-1)+str1len*(j-1)]+cost ))
+                d[i+str1len*j]=$( echo -e "$del\n$ins\n$alt" | sort -n | head -1 )
+            done
+        done
+        echo ${d[str1len+str1len*(str2len)]}
+    fi
 }
 
 CreateDownloadFolders
