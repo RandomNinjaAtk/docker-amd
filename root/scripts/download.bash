@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.02 ############################################"
+	echo "############################################ SCRIPT VERSION 1.0.03 ############################################"
 	echo "############################################ DOCKER VERSION $VERSION ############################################"
 	echo "######################################### CONFIGURATION VERIFICATION #########################################"
 	error=0
@@ -131,7 +131,7 @@ CacheEngine () {
 		rm -rf "/config/temp"
 	fi
 	for id in ${!MBArtistID[@]}; do
-		artistnumber=$(( $id + 1 ))
+        artistnumber=$(( $id + 1 ))
 		mbid="${MBArtistID[$id]}"
         LidArtistNameCap="$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .artistName")"
         sanatizedartistname="$(echo "${LidArtistNameCap}" | sed -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g' -e 's/^\(nul\|prn\|con\|lpt[0-9]\|com[0-9]\|aux\)\(\.\|$\)//i' -e 's/^\.*$//' -e 's/^$/NONAME/')"
@@ -282,8 +282,7 @@ WantedMode () {
 			# albumtidalurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"tidal\")).resource" | head -n 1)"
 		fi
 		if [ ! -z "$albumdeezerurl" ]; then
-			deezeralbumid="$(echo "${albumdeezerurl}" | grep -o '[[:digit:]]*')"
-			deezeralbumsearchdata=$(curl -s "https://api.deezer.com/album/deezeralbumid${deezeralbumid}")
+			deezeralbumsearchdata=$(curl -s "${albumdeezerurl}")
 			errocheck="$(echo "$deezeralbumsearchdata" | jq -r ".error.code")"
 			if [ "$errocheck" != "null" ]; then
 				echo "$logheader :: ERROR :: Provided URL is broken, fallback to fuzzy search..."
@@ -299,23 +298,23 @@ WantedMode () {
 				recordtitle="$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .title")"
 				recordmbrainzid=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .foreignReleaseId")
 				albumtitle="$recordtitle"
-				albumtitlecleans="$(echo "$albumtitle" | sed -e 's/["”“]//g')"
+				albumtitlecleans="$(echo "$albumtitle" | sed -e 's/["”“]//g' -e 's/‐/ /g')"
 				albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 				albumtitlesearch="$(jq -R -r @uri <<<"${albumtitlecleans}")"
 				deezersearchalbumid=""
 				deezeralbumtitle=""
 				if [ "$albumartistname" !=	"Various Artists" ]; then
-					deezersearchurl="https://api.deezer.com/search?q=artist:%22${albumartistnamesearch}%22%20album:%22${albumtitlesearch}%22"
+					deezersearchurl="https://api.deezer.com/search?q=artist:%22${albumartistnamesearch}%22%20album:%22${albumtitlesearch}%22&limit=1000"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
 				else
-					deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22"
+					deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22&limit=1000"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
 				fi
 
 				deezersearchcount="$(echo "$deezeralbumsearchdata" | jq -r ".total")"
 				if [ "$deezersearchcount" == "0" ]; then
 					if [ "$albumartistname" !=	"Various Artists" ]; then
-						deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22"
+						deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22&limit=1000"
 						deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
 						searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | sort_by(.album.title) | .[] | select(.artist.name | contains(\"$artistcleans\"))")"
 					else
@@ -328,18 +327,6 @@ WantedMode () {
 
 				if [ "$ExplicitPreferred" == "true" ]; then
 					if [ -z "$deezersearchalbumid" ]; then
-						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | select(.album.type==\"$lidarralbumtypelower\") | .album.id" | head -n 1)"
-					fi
-					if [ -z "$deezersearchalbumid" ]; then
-						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | select(.album.type==\"album\") | .album.id" | head -n 1)"
-					fi
-					if [ -z "$deezersearchalbumid" ]; then
-						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | select(.album.type==\"ep\") | .album.id" | head -n 1)"
-					fi
-					if [ -z "$deezersearchalbumid" ]; then
-						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | select(.album.type==\"single\") | .album.id" | head -n 1)"
-					fi
-					if [ -z "$deezersearchalbumid" ]; then
 						deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) | .album.id" | head -n 1)"
 					fi
 					if [ ! -z "$deezersearchalbumid" ]; then
@@ -349,18 +336,6 @@ WantedMode () {
 					fi
 				fi
 				
-				if [ -z "$deezersearchalbumid" ]; then
-					deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.album.type==\"$lidarralbumtypelower\") | .album.id" | head -n 1)"
-				fi
-				if [ -z "$deezersearchalbumid" ]; then
-					deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.album.type==\"album\") | .album.id" | head -n 1)"
-				fi
-				if [ -z "$deezersearchalbumid" ]; then
-					deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.album.type==\"ep\") | .album.id" | head -n 1)"
-				fi
-				if [ -z "$deezersearchalbumid" ]; then
-					deezersearchalbumid="$(echo "$searchdata" | jq -r "select(.album.type==\"single\") | .album.id" | head -n 1)"
-				fi
 				if [ -z "$deezersearchalbumid" ]; then
 					deezersearchalbumid="$(echo "$searchdata" | jq -r ".album.id" | head -n 1)"
 				fi
@@ -453,8 +428,8 @@ WantedMode () {
 
 CleanupFailedImports () {
 	if [ -d "$DOWNLOADS/amd/import" ]; then
-		if ! [[ $(find "$DOWNLOADS/amd/import" -mindepth 1 -type d -mmin +480 -print) ]]; then
-			find "$DOWNLOADS/amd/import" -mindepth 1 -type d -mmin +480 -print -exec rm -rf "{}" \; &> /dev/null
+		if find "$DOWNLOADS"/amd/import -mindepth 1 -type d -mmin +480 | read; then
+			find "$DOWNLOADS"/amd/import -mindepth 1 -type d -mmin +480 -exec rm -rf "{}" \; &> /dev/null
 		fi
 	fi
 }
@@ -518,9 +493,9 @@ TagFix () {
 
 CreateDownloadFolders
 SetFolderPermissions
+CleanupFailedImports
 Configuration
 CacheEngine
-CleanupFailedImports
 WantedMode
 
 exit 0
