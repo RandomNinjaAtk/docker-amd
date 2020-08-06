@@ -1,6 +1,9 @@
 #!/usr/bin/with-contenv bash
 export XDG_CONFIG_HOME="/xdg"
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
 agent="automated-music-downloader ( https://github.com/RandomNinjaAtk/docker-amd )"
+
 Configuration () {
 	processstartid="$(ps -A -o pid,cmd|grep "start.bash" | grep -v grep | head -n 1 | awk '{print $1}')"
 	processdownloadid="$(ps -A -o pid,cmd|grep "download.bash" | grep -v grep | head -n 1 | awk '{print $1}')"
@@ -10,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.0 ############################################"
+	echo "############################################ SCRIPT VERSION 1.0.01 ############################################"
 	echo "############################################ DOCKER VERSION $VERSION ############################################"
 	echo "######################################### CONFIGURATION VERIFICATION #########################################"
 	error=0
