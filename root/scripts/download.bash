@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.11"
+	echo "############################################ SCRIPT VERSION 1.0.12"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -338,11 +338,11 @@ WantedMode () {
                     if [ ! -z "$deezersearchalbumid" ]; then
                         for id in "${!deezersearchalbumid[@]}"; do
                             deezerid=${deezersearchalbumid[$id]}
-                            albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
                             deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
                             diff=$(levenshtein "$recordtitle" "$deezeralbumtitle")
                             if [ "$diff" -le "10" ]; then
                                 echo "$logheader :: $albumtitle vs $deezeralbumtitle = $diff :: $deezerid :: EXPLICIT :: MATCH"
+								deezersearchalbumid="$deezerid"
                                 break
                             else
                                 deezersearchalbumid=""
@@ -359,21 +359,21 @@ WantedMode () {
 				
 				if [ -z "$deezersearchalbumid" ]; then
 					deezersearchalbumid=($(echo "$searchdata" | jq -r ".album.id" | sort -u))
-				fi
-
-                if [ ! -z "$deezersearchalbumid" ]; then
-                    for id in "${!deezersearchalbumid[@]}"; do
-                        deezerid=${deezersearchalbumid[$id]}
-                        albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
-                        deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
-                        diff=$(levenshtein "$recordtitle" "$deezeralbumtitle")
-                        if [ "$diff" -le "10" ]; then
-                            echo "$logheader :: $albumtitle vs $deezeralbumtitle = $diff :: $deezerid :: ALL :: MATCH"
-                            break
-                        else
-                            deezersearchalbumid=""
-                        fi
-                    done
+				
+                    if [ ! -z "$deezersearchalbumid" ]; then
+                        for id in "${!deezersearchalbumid[@]}"; do
+                            deezerid=${deezersearchalbumid[$id]}
+                            deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
+                            diff=$(levenshtein "$recordtitle" "$deezeralbumtitle")
+                            if [ "$diff" -le "10" ]; then
+                                echo "$logheader :: $albumtitle vs $deezeralbumtitle = $diff :: $deezerid :: ALL :: MATCH"
+                                deezersearchalbumid="$deezerid"
+                                break
+                            else
+                                deezersearchalbumid=""
+                            fi
+                        done
+                    fi
                 fi
 
 				if [ "$explicit" == "true" ]; then
@@ -381,6 +381,7 @@ WantedMode () {
 				fi
 
 				if [ ! -z "$deezersearchalbumid" ]; then
+					albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
 					error=0
 					break
 				else
