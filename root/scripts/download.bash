@@ -10,7 +10,8 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-
+	echo "############################################ SCRIPT VERSION 1.0.0 ############################################"
+	echo "############################################ DOCKER VERSION $VERSION ############################################"
 	echo "######################################### CONFIGURATION VERIFICATION #########################################"
 	error=0
 
@@ -402,6 +403,8 @@ WantedMode () {
 			if cd "${PathToDLClient}" && python3 -m deemix -b $quality "$albumdeezerurl" && cd "${currentpwd}"; then
 				sleep 0.5
 				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+					chmod $FilePermissions "$DOWNLOADS"/amd/dlclient/*
+					chown -R abc:abc "$DOWNLOADS"/amd/dlclient
 					echo "$logheader :: DOWNLOAD :: success"
 					echo "$filelogheader :: $albumdeezerurl"  >> "/config/logs/download.log"
 				else
@@ -429,6 +432,7 @@ WantedMode () {
 		if [ ! -d "$DOWNLOADS/amd/import" ]; then
 			mkdir -p "$DOWNLOADS/amd/import"
 			chmod $FolderPermissions "$DOWNLOADS/amd/import"
+			chown -R abc:abc "$DOWNLOADS/amd/import"
 		fi
 
 		if [ ! -d "$albumbimportfolder" ]; then
@@ -436,6 +440,7 @@ WantedMode () {
 			mv "$DOWNLOADS"/amd/dlclient/* "$albumbimportfolder"/
 			chmod $FolderPermissions "$albumbimportfolder"
 			chmod $FilePermissions "$albumbimportfolder"/*
+			chown -R abc:abc "$albumbimportfolder"
 		fi
 		importalbumfolder="$albumbimportfolder"
 		LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${importalbumfolder}\"}")
@@ -459,21 +464,24 @@ CreateDownloadFolders () {
 	if [ ! -d "$DOWNLOADS/amd/dlclient" ]; then
 		mkdir -p "$DOWNLOADS/amd/dlclient"
 	else
-		rm 	"$DOWNLOADS"/amd/dlclient/* &> /dev/null
+		rm "$DOWNLOADS"/amd/dlclient/* &> /dev/null
 	fi
 }
 
 SetFolderPermissions () {
 	if [ -d "$DOWNLOADS/amd/import" ]; then
 		chmod $FolderPermissions "$DOWNLOADS/amd/import"
+		chown -R abc:abc "$DOWNLOADS/amd/import"
 	fi
 	
 	if [ -d "$DOWNLOADS/amd/dlclient" ]; then
 		chmod $FolderPermissions "$DOWNLOADS/amd/dlclient"
+		chown -R abc:abc "$DOWNLOADS/amd/dlclient"
 	fi
 	
 	if [ -d "$DOWNLOADS/amd" ]; then
 		chmod $FolderPermissions "$DOWNLOADS/amd"
+		chown -R abc:abc "$DOWNLOADS/amd"
 	fi
 }
 
