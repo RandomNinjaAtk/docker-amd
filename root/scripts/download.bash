@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.1"
+	echo "############################################ SCRIPT VERSION 1.0.11"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -429,15 +429,15 @@ WantedMode () {
 				fi
 			fi
 
-			file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
-			if [ ! -z "$file" ]; then
-				artwork="$(dirname "$file")/folder.jpg"
-				if ffmpeg -y -i "$file" -c:v copy "$artwork" 2>/dev/null; then
-					echo "$logheader :: DOWNLOAD :: Artwork Extracted"
-				else
-					echo "$logheader :: DOWNLOAD :: ERROR :: No artwork found"
-				fi
-			fi
+			#file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
+			#if [ ! -z "$file" ]; then
+			#	artwork="$(dirname "$file")/folder.jpg"
+			#	if ffmpeg -y -i "$file" -c:v copy "$artwork" 2>/dev/null; then
+			#		echo "$logheader :: DOWNLOAD :: Artwork Extracted"
+			#	else
+			#		echo "$logheader :: DOWNLOAD :: ERROR :: No artwork found"
+			#	fi
+			#fi
 		else
 			echo "$filelogheader :: $albumdeezerurl"  >> "/config/logs/download.log"
 		fi
