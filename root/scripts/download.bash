@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.01 ############################################"
+	echo "############################################ SCRIPT VERSION 1.0.02 ############################################"
 	echo "############################################ DOCKER VERSION $VERSION ############################################"
 	echo "######################################### CONFIGURATION VERIFICATION #########################################"
 	error=0
@@ -131,7 +131,7 @@ CacheEngine () {
 		rm -rf "/config/temp"
 	fi
 	for id in ${!MBArtistID[@]}; do
-        artistnumber=$(( $id + 1 ))
+		artistnumber=$(( $id + 1 ))
 		mbid="${MBArtistID[$id]}"
         LidArtistNameCap="$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .artistName")"
         sanatizedartistname="$(echo "${LidArtistNameCap}" | sed -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g' -e 's/^\(nul\|prn\|con\|lpt[0-9]\|com[0-9]\|aux\)\(\.\|$\)//i' -e 's/^\.*$//' -e 's/^$/NONAME/')"
@@ -254,7 +254,7 @@ WantedMode () {
 		albumartistmbzid=$(echo "${lidarralbumdata}"| jq -r '.[].artist.foreignArtistId')
 		albumartistname=$(echo "${lidarralbumdata}"| jq -r '.[].artist.artistName')
 		artistclean="$(echo "$albumartistname" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
-		artistcleans="$(echo "$albumartistname" | sed -e 's/["”“]//g')"
+		artistcleans="$(echo "$albumartistname" | sed -e 's/["”“]//g' -e 's/‐/ /g')"
 		albumartistnamesearch="$(jq -R -r @uri <<<"${artistcleans}")"
 		albumartistpath=$(echo "${lidarralbumdata}"| jq -r '.[].artist.path')
 		albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
