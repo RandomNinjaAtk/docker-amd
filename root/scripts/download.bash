@@ -13,9 +13,9 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.03 ############################################"
-	echo "############################################ DOCKER VERSION $VERSION ############################################"
-	echo "######################################### CONFIGURATION VERIFICATION #########################################"
+	echo "############################################ SCRIPT VERSION 1.0.04"
+	echo "############################################ DOCKER VERSION $VERSION"
+	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
 
 	if [ "$AUTOSTART" = "true" ]; then
@@ -122,7 +122,7 @@ Configuration () {
 }
 
 CacheEngine () {
-	echo "######################################### STARTING CACHE ENGINE #########################################"
+	echo "############################################ STARTING CACHE ENGINE"
 	wantit=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/Artist/")
 	wantedtotal=$(echo "${wantit}"| jq -r '.[].sortName' | wc -l)
 	MBArtistID=($(echo "${wantit}" | jq -r ".[].foreignArtistId"))
@@ -232,7 +232,7 @@ CacheEngine () {
 }
 
 WantedMode () {
-	echo "######################################### DOWNLOAD AUDIO (WANTED MODE) #########################################"
+	echo "############################################ DOWNLOAD AUDIO (WANTED MODE)"
 	missinglist=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/missing/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate")
 	missinglisttotal=$(echo "$missinglist" | jq -r '.records | .[] | .id' | wc -l)
 	missinglistalbumids=($(echo "$missinglist"| jq -r '.records | .[] | .id'))
@@ -273,6 +273,8 @@ WantedMode () {
 		
 		if [  -d "$albumbimportfolder" ]; then
 			echo "$logheader :: Already Downloaded, skipping..."
+			LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${importalbumfolder}\"}")
+			echo "$logheader :: LIDARR IMPORT NOTIFICATION SENT! :: $albumbimportfolder"
 			continue
 		fi
 
@@ -424,6 +426,7 @@ WantedMode () {
 		LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${importalbumfolder}\"}")
 		echo "$logheader :: LIDARR IMPORT NOTIFICATION SENT! :: $albumbimportfolder"
 	done
+	echo "############################################ DOWNLOAD AUDIO COMPLETE"
 }
 
 CleanupFailedImports () {
