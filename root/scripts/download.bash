@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.0.23"
+	echo "############################################ SCRIPT VERSION 1.1.0"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -96,8 +96,9 @@ Configuration () {
 		echo "Audio: Concurrency: $Concurrency"
 		sed -i "s%\"queueConcurrency\": 3%\"queueConcurrency\": $Concurrency%g" "/xdg/deemix/config.json"
 	else
-		echo "ERROR: Concurrency setting invalid, defaulting to: 3"
-		Concurrency="3"
+		echo "ERROR: Concurrency setting invalid, defaulting to: 1"
+		Concurrency="1"
+		sed -i "s%\"queueConcurrency\": 3%\"queueConcurrency\": $Concurrency%g" "/xdg/deemix/config.json"
 	fi
 	
 	if [ "$quality" == "FLAC" ]; then
@@ -151,7 +152,7 @@ Configuration () {
 		exit 1
 	fi
 	amount=1000000000
-	sleep 5
+	sleep 2.5
 }
 
 CacheEngine () {
@@ -163,9 +164,28 @@ CacheEngine () {
 	if [ -d "/config/temp" ]; then
 		rm -rf "/config/temp"
 	fi
-	for id in ${!MBArtistID[@]}; do
-        artistnumber=$(( $id + 1 ))
-		mbid="${MBArtistID[$id]}"
+
+	N=$Concurrency
+    (
+		for id in ${!MBArtistID[@]}; do 
+			((i=i%N)); ((i++==0)) && wait
+			artistnumber=$(( $id + 1 ))
+			ParallelCache "${MBArtistID[$id]}" &
+		done
+		wait
+    )
+    wait
+
+	# sleep to allow parallel processes to complete
+	sleep 60
+	if [ -d "/config/temp" ]; then
+		rm -rf "/config/temp"
+	fi
+}
+
+ParallelCache () {
+
+		mbid="$1"
         LidArtistNameCap="$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .artistName")"
         sanatizedartistname="$(echo "${LidArtistNameCap}" | sed -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g' -e 's/^\(nul\|prn\|con\|lpt[0-9]\|com[0-9]\|aux\)\(\.\|$\)//i' -e 's/^\.*$//' -e 's/^$/NONAME/')"
 		if [ "$LidArtistNameCap" ==	"Various Artists" ]; then
@@ -250,15 +270,12 @@ CacheEngine () {
 				rm /config/temp/$mbid-releases-page-*.json
 			fi
 
-			if [ -d "/config/temp" ]; then
-				rm -rf "/config/temp"
-			fi
 		fi
 
 		mbzartistinfo="$(cat "/config/cache/$sanatizedartistname-$mbid-info.json")"
 		deezerurl="$(echo "$mbzartistinfo" | jq -r ".relations | .[] | .url | select(.resource | contains(\"deezer\")) | .resource")"
 		touch "/config/cache/$sanatizedartistname-$mbid-cache-complete"
-	done
+
 }
 
 WantedMode () {
