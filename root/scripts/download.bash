@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.21"
+	echo "############################################ SCRIPT VERSION 1.0.22"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -206,7 +206,6 @@ CacheEngine () {
 		if [ ! -f "/config/cache/$sanatizedartistname-$mbid-releases.json" ]; then
 			if [ ! -d "/config/temp" ]; then
 				mkdir "/config/temp"
-				sleep 0.1
 			fi	
 	
 			offsetcount=$(( $releasecount / 100 ))
@@ -232,11 +231,9 @@ CacheEngine () {
 
 			if [ -f "/config/cache/$sanatizedartistname-$mbid-releases.json" ]; then
 				rm /config/temp/$mbid-releases-page-*.json
-				sleep .01
 			fi
 
 			if [ -d "/config/temp" ]; then
-				sleep 0.1
 				rm -rf "/config/temp"
 			fi
 		fi
