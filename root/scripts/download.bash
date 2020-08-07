@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.15"
+	echo "############################################ SCRIPT VERSION 1.0.16"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -272,6 +272,9 @@ WantedMode () {
 		albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 		albumartistmbzid=$(echo "${lidarralbumdata}"| jq -r '.[].artist.foreignArtistId')
 		albumartistname=$(echo "${lidarralbumdata}"| jq -r '.[].artist.artistName')
+		if [ "$albumartistname" == "Korn" ]; then # Fix for online source naming convention...
+			albumartistname="KoЯn"
+		fi
 		artistclean="$(echo "$albumartistname" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 		artistcleans="$(echo "$albumartistname" | sed -e 's/["”“]//g' -e 's/‐/ /g')"
 		albumartistnamesearch="$(jq -R -r @uri <<<"${artistcleans}")"
