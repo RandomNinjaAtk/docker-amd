@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.17"
+	echo "############################################ SCRIPT VERSION 1.0.18"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -269,7 +269,7 @@ WantedMode () {
 		albumtitle="$(echo "${lidarralbumdata}"| jq -r '.[] | .title')"
 		albumreleasedate="$(echo "${lidarralbumdata}"| jq -r '.[] | .releaseDate')"
 		albumreleaseyear="${albumreleasedate:0:4}"
-		albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
+		albumclean="$(echo "$albumtitle" | sed -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 		albumartistmbzid=$(echo "${lidarralbumdata}"| jq -r '.[].artist.foreignArtistId')
 		albumartistname=$(echo "${lidarralbumdata}"| jq -r '.[].artist.artistName')
 		if [ "$albumartistname" == "Korn" ]; then # Fix for online source naming convention...
@@ -426,6 +426,7 @@ WantedMode () {
 					albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
 					albumreleaseyear="$deezeralbumyear"
 					lidarralbumtype="$deezeralbumtype"
+					albumclean="$(echo "$deezeralbumtitle" | sed -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 					error=0
 					break
 				else
