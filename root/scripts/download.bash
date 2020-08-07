@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.16"
+	echo "############################################ SCRIPT VERSION 1.0.17"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -360,6 +360,8 @@ WantedMode () {
 							deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
                             deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
 							deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
+							deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
+							deezeralbumyear="${deezeralbumdate:0:4}"
 							if [[ "$deezeralbumtype" == "single" && "$lidarralbumtypelower" != "single" ]]; then
 								deezersearchalbumid=""
 								continue
@@ -395,6 +397,8 @@ WantedMode () {
 							deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
                             deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
 							deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
+							deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
+							deezeralbumyear="${deezeralbumdate:0:4}"
 							if [[ "$deezeralbumtype" == "single" && "$lidarralbumtypelower" != "single" ]]; then
 								deezersearchalbumid=""
 								continue
@@ -420,6 +424,8 @@ WantedMode () {
 
 				if [ ! -z "$deezersearchalbumid" ]; then
 					albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
+					albumreleaseyear="$deezeralbumyear"
+					lidarralbumtype="$deezeralbumtype"
 					error=0
 					break
 				else
