@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.19"
+	echo "############################################ SCRIPT VERSION 1.0.20"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -273,11 +273,17 @@ WantedMode () {
 		albumartistmbzid=$(echo "${lidarralbumdata}"| jq -r '.[].artist.foreignArtistId')
 		albumartistname=$(echo "${lidarralbumdata}"| jq -r '.[].artist.artistName')
 		if [ "$albumartistname" == "Korn" ]; then # Fix for online source naming convention...
+			originalartistname="$albumartistname"
 			albumartistname="KoЯn"
+		else
+			originalartistname=""
 		fi
 		artistclean="$(echo "$albumartistname" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 		artistcleans="$(echo "$albumartistname" | sed -e 's/["”“]//g' -e 's/‐/ /g')"
 		albumartistnamesearch="$(jq -R -r @uri <<<"${artistcleans}")"
+		if [ ! -z "$originalartistname" ]; then # Fix for online source naming convention...
+			albumartistname="$originalartistname"
+		fi
 		albumartistpath=$(echo "${lidarralbumdata}"| jq -r '.[].artist.path')
 		albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
 		albumbimportfoldername="$(basename "$albumbimportfolder")"
