@@ -12,8 +12,8 @@ Configuration () {
 	echo "kill -9 $processdownloadid"
 	echo ""
 	echo ""
-	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.22"
+	sleep 2.5
+	echo "############################################ SCRIPT VERSION 1.0.23"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -22,6 +22,23 @@ Configuration () {
 		echo "Automatic Start: ENABLED"
 	else
 		echo "Automatic Start: DISABLED"
+	fi
+	
+	# Verify Lidarr Connectivity
+	lidarrtest=$(curl -s "$LidarrUrl/api/v1/system/status?apikey=${LidarrAPIkey}" | jq -r ".version")
+	if [ ! -z "$lidarrtest" ]; then
+		if [ "$lidarrtest" != "null" ]; then
+			echo "Lidarr Connection Valid, version: $lidarrtest"
+		else
+			echo "ERROR: Cannot communicate with Lidarr, most likely a...."
+			echo "ERROR: Invalid API Key: $LidarrAPIkey"
+			error=1
+		fi
+	else
+		echo "ERROR: Cannot communicate with Lidarr, no response"
+		echo "ERROR: URL: $LidarrUrl"
+		echo "ERROR: API Key: $LidarrAPIkey"
+		error=1
 	fi
     
     # Verify Musicbrainz DB Connectivity
