@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.20"
+	echo "############################################ SCRIPT VERSION 1.0.21"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -249,8 +249,8 @@ CacheEngine () {
 
 WantedMode () {
 	echo "############################################ DOWNLOAD AUDIO (WANTED MODE)"
-	missinglist=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/missing/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate")
-	missinglisttotal=$(echo "$missinglist" | jq -r '.records | .[] | .id' | wc -l)
+	echo "Aquiring wanted list..."
+	missinglist=$(curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/missing/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate")	missinglisttotal=$(echo "$missinglist" | jq -r '.records | .[] | .id' | wc -l)
 	missinglistalbumids=($(echo "$missinglist"| jq -r '.records | .[] | .id'))
 
 	for id in ${!missinglistalbumids[@]}; do
