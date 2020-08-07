@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.1.0"
+	echo "############################################ SCRIPT VERSION 1.1.01"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -175,9 +175,9 @@ CacheEngine () {
 		wait
     )
     wait
-
-	# sleep to allow parallel processes to complete
-	sleep 60
+	
+	echo "Sleep 15 seconds to allow processes to complete"
+	sleep 15
 	if [ -d "/config/temp" ]; then
 		rm -rf "/config/temp"
 	fi
@@ -189,13 +189,13 @@ ParallelCache () {
         LidArtistNameCap="$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .artistName")"
         sanatizedartistname="$(echo "${LidArtistNameCap}" | sed -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g' -e 's/^\(nul\|prn\|con\|lpt[0-9]\|com[0-9]\|aux\)\(\.\|$\)//i' -e 's/^\.*$//' -e 's/^$/NONAME/')"
 		if [ "$LidArtistNameCap" ==	"Various Artists" ]; then
-			continue
+			exit
 		fi
 
 		if [ -f "/config/cache/$sanatizedartistname-$mbid-cache-complete" ]; then
 			if ! [[ $(find "/config/cache/$sanatizedartistname-$mbid-cache-complete" -mtime +7 -print) ]]; then
 				echo "${artistnumber} of ${wantedtotal} :: MBZDB CACHE :: $LidArtistNameCap :: Skipping until cache expires..."
-				continue
+				exit
 			fi
 		fi
 
