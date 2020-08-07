@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.14"
+	echo "############################################ SCRIPT VERSION 1.0.15"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -354,7 +354,17 @@ WantedMode () {
                     if [ ! -z "$deezersearchalbumid" ]; then
                         for id in "${!deezersearchalbumid[@]}"; do
                             deezerid=${deezersearchalbumid[$id]}
-                            deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
+							deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
+                            deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+							deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
+							if [[ "$deezeralbumtype" == "single" && "$lidarralbumtypelower" != "single" ]]; then
+								deezersearchalbumid=""
+								continue
+							elif [[ "$deezeralbumtype" != "single" && "$lidarralbumtypelower" == "single" ]]; then
+								deezersearchalbumid=""
+								continue
+							fi
+							
                             diff=$(levenshtein "$recordtitle" "$deezeralbumtitle")
                             if [ "$diff" -le "$MatchDistance" ]; then
                                 echo "$logheader :: $albumtitle vs $deezeralbumtitle :: Distance = $diff :: $deezerid :: EXPLICIT :: MATCH"
@@ -379,7 +389,16 @@ WantedMode () {
                     if [ ! -z "$deezersearchalbumid" ]; then
                         for id in "${!deezersearchalbumid[@]}"; do
                             deezerid=${deezersearchalbumid[$id]}
-                            deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
+							deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
+                            deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+							deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
+							if [[ "$deezeralbumtype" == "single" && "$lidarralbumtypelower" != "single" ]]; then
+								deezersearchalbumid=""
+								continue
+							elif [[ "$deezeralbumtype" != "single" && "$lidarralbumtypelower" == "single" ]]; then
+								deezersearchalbumid=""
+								continue
+							fi
                             diff=$(levenshtein "$recordtitle" "$deezeralbumtitle")
                             if [ "$diff" -le "$MatchDistance" ]; then
                                 echo "$logheader :: $albumtitle vs $deezeralbumtitle :: Distance = $diff :: $deezerid :: ALL :: MATCH"
