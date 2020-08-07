@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 5
-	echo "############################################ SCRIPT VERSION 1.0.13"
+	echo "############################################ SCRIPT VERSION 1.0.14"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -75,6 +75,14 @@ Configuration () {
 		error=1
 	fi
 	
+	if [ ! -z "$Concurrency" ]; then
+		echo "Audio: Concurrency: $Concurrency"
+		sed -i "s%\"queueConcurrency\": 3%\"queueConcurrency\": $Concurrency%g" "/xdg/deemix/config.json"
+	else
+		echo "ERROR: Concurrency setting invalid, defaulting to: 3"
+		Concurrency="3"
+	fi
+	
 	if [ "$quality" == "FLAC" ]; then
 		echo "Audio: Download Quality: FLAC"
 		echo "Audio: Download Bitrate: lossless"
@@ -91,9 +99,9 @@ Configuration () {
 	fi
 
 	if [ "$ExplicitPreferred" == "true" ]; then
-		echo "Audio Explicit Preferred: ENABLED"
+		echo "Audio: Explicit Preferred: ENABLED"
 	else
-		echo "Audio Explicit Preferred: DISABLED"
+		echo "Audio: Explicit Preferred: DISABLED"
 	fi
 
     if [ ! -z "$MatchDistance" ]; then
