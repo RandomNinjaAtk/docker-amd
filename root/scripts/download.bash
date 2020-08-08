@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.2.0"
+	echo "############################################ SCRIPT VERSION 1.2.1"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -487,6 +487,49 @@ WantedMode () {
 						done
 					fi
 				fi
+				
+				if [ ! -z "$deezersearchalbumid" ]; then
+					for id in "${!deezersearchalbumid[@]}"; do
+						deezerid=${deezersearchalbumid[$id]}
+						deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
+						diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
+						if [ "$diff" -le "$MatchDistance" ]; then
+							echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: MATCH"
+							deezersearchalbumid="$deezerid"
+						else
+							echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: ERROR :: NO MATCH FOUND"
+							deezersearchalbumid=""
+							continue
+						fi
+
+						deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
+						deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+						deezeralbumartist="$(echo "$deezeralbumdata" | jq -r ".artist.name")"
+						deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
+						deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
+						deezeralbumyear="${deezeralbumdate:0:4}"
+						explicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
+						if [[ "$deezeralbumtype" == "single" && "$lidarralbumtypelower" != "single" ]]; then
+							deezersearchalbumid=""
+							continue
+						elif [[ "$deezeralbumtype" != "single" && "$lidarralbumtypelower" == "single" ]]; then
+							deezersearchalbumid=""
+							continue
+						fi
+
+						diff=$(levenshtein "${albumartistname,,}" "${deezeralbumartist,,}")
+						if [ "$diff" -le "2" ]; then
+							echo "$logheader :: ${albumartistname,,} vs ${deezeralbumartist,,} :: Distance = $diff :: Artist Name Match"
+							deezersearchalbumid="$deezerid"
+							break
+						else
+							echo "$logheader :: ${albumartistname,,} vs ${deezeralbumartist,,} :: Distance = $diff :: ERROR :: Artist Name did not match"
+							deezersearchalbumid=""
+							continue
+						fi
+					done
+				fi
+				
 
 				if [ "$explicit" == "true" ]; then
 					echo "$logheader :: Explicit Release Found"
