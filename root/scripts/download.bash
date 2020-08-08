@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.2.1"
+	echo "############################################ SCRIPT VERSION 1.2.2"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -377,12 +377,12 @@ WantedMode () {
 				deezeralbumtitle=""
 				explicit="false"
 				if [ "$albumartistname" !=	"Various Artists" ]; then
-					echo "$logheader :: Searching using Arist Name + Album Name"
+					echo "$logheader :: Searching using $albumartistname + $albumtitle"
 					deezersearchurl="https://api.deezer.com/search?q=artist:%22${albumartistnamesearch}%22%20album:%22${albumtitlesearch}%22&limit=1000"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
 
 				else
-					echo "$logheader :: Searching using Album Name"
+					echo "$logheader :: Searching using $albumtitle"
 					deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22&limit=1000"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
 				fi
@@ -391,24 +391,19 @@ WantedMode () {
 				if [ "$deezersearchcount" == "0" ]; then
 					if [ "$albumartistname" !=	"Various Artists" ]; then
 						echo "$logheader :: No results found, fallback search..."
-						echo "$logheader :: Searching using Album Name"
+						echo "$logheader :: Searching using $albumtitle"
 						deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22&limit=1000"
 						deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
+						deezersearchcount="$(echo "$deezeralbumsearchdata" | jq -r ".total")"
 						searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[]")"
 					else
 						error=1
 						continue
 					fi
 				else
-					deezersearchcount="$(echo "$deezeralbumsearchdata" | jq -r ".total")"
-					if [ "$deezersearchcount" == "0" ]; then
-						error=1
-						continue
-					else
-						searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[]")"
-					fi
-
+					searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[]")"
 				fi
+				echo "$logheader :: $deezersearchcount Albums Found"
 				if [ -z "$deezersearchalbumid" ]; then
 					if [ ! -d "/config/scripts/temp" ]; then
 						mkdir -p /config/scripts/temp
@@ -417,7 +412,9 @@ WantedMode () {
 					fi
 
 					albumidlist=($(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) |.album.id" | sort -u))
+					albumidlistcount="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) |.album.id" | sort -u | wc -l)"
 					if [ ! -z "$albumidlist" ]; then
+						echo "$logheader :: $albumidlistcount Explicit Albums Found"
 						for id in ${!albumidlist[@]}; do
 							albumid="${albumidlist[$id]}"
 
@@ -429,7 +426,9 @@ WantedMode () {
 					fi
 
 					albumidlist=($(echo "$searchdata" | jq -r "select(.explicit_lyrics==false) |.album.id" | sort -u))
+					albumidlistcount="$(echo "$searchdata" | jq -r "select(.explicit_lyrics==false) |.album.id" | sort -u | wc -l)"
 					if [ ! -z "$albumidlist" ]; then
+						echo "$logheader :: $albumidlistcount Clean Albums Found"
 						for id in ${!albumidlist[@]}; do
 							albumid="${albumidlist[$id]}"
 							if ! find /config/scripts/temp -type f -iname "*-$albumid" | read; then
@@ -438,16 +437,16 @@ WantedMode () {
 						done
 					fi
 
-					deezersearchalbumid=($(ls /config/scripts/temp | sort -r | grep -o '[[:digit:]]*'))
-
+					albumlistalbumid=($(ls /config/scripts/temp | sort -r | grep -o '[[:digit:]]*'))
+					albumlistalbumidcount="$(ls /config/scripts/temp | sort -r | grep -o '[[:digit:]]*' | wc -l)"
 					if [ -d "/config/scripts/temp" ]; then
 						rm -rf /config/scripts/temp
 					fi
 
-
-					if [ ! -z "$deezersearchalbumid" ]; then
-						for id in "${!deezersearchalbumid[@]}"; do
-							deezerid=${deezersearchalbumid[$id]}
+					if [ -z "$deezersearchalbumid" ]; then
+						echo "$logheader :: Searching $albumlistalbumidcount Albums for Matches with Max Distance Score of 1 or less"
+						for id in "${!albumlistalbumid[@]}"; do
+							deezerid=${albumlistalbumid[$id]}
 							deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
 							diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
 							if [ "$diff" -le "1" ]; then
@@ -467,9 +466,11 @@ WantedMode () {
 							deezeralbumyear="${deezeralbumdate:0:4}"
 							explicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
 							if [[ "$deezeralbumtype" == "single" && "$lidarralbumtypelower" != "single" ]]; then
+								echo "$logheader :: ERROR :: Album Type Did not Match"
 								deezersearchalbumid=""
 								continue
 							elif [[ "$deezeralbumtype" != "single" && "$lidarralbumtypelower" == "single" ]]; then
+								echo "$logheader :: ERROR :: Album Type Did not Match"
 								deezersearchalbumid=""
 								continue
 							fi
@@ -488,9 +489,10 @@ WantedMode () {
 					fi
 				fi
 				
-				if [ ! -z "$deezersearchalbumid" ]; then
-					for id in "${!deezersearchalbumid[@]}"; do
-						deezerid=${deezersearchalbumid[$id]}
+				if [ -z "$deezersearchalbumid" ]; then
+					echo "$logheader :: Searching $albumlistalbumidcount Albums for Matches with Max Distance Score of $MatchDistance or less"
+					for id in "${!albumlistalbumid[@]}"; do
+						deezerid=${albumlistalbumid[$id]}
 						deezeralbumtitle="$(echo "$searchdata" | jq -r "select(.album.id==$deezerid) | .album.title" | head -n 1)"
 						diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
 						if [ "$diff" -le "$MatchDistance" ]; then
@@ -510,9 +512,11 @@ WantedMode () {
 						deezeralbumyear="${deezeralbumdate:0:4}"
 						explicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
 						if [[ "$deezeralbumtype" == "single" && "$lidarralbumtypelower" != "single" ]]; then
+							echo "$logheader :: ERROR :: Album Type Did not Match"
 							deezersearchalbumid=""
 							continue
 						elif [[ "$deezeralbumtype" != "single" && "$lidarralbumtypelower" == "single" ]]; then
+							echo "$logheader :: ERROR :: Album Type Did not Match"
 							deezersearchalbumid=""
 							continue
 						fi
