@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.1.03"
+	echo "############################################ SCRIPT VERSION 1.1.04"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -68,7 +68,8 @@ Configuration () {
 	# verify downloads location
 	if [ -d "/downloads-amd" ]; then
 		DOWNLOADS="/downloads-amd"
-		echo "DOWNLOADS Location: $DOWNLOADS"
+		echo "Downloads Location: $DOWNLOADS/amd/dlclient"
+		echo "Import Location: $DOWNLOADS/amd/import"
 		sed -i "s%/downloadfolder%/downloads-amd/amd/dlclient%g" "/xdg/deemix/config.json"
 	else
 		if [ -d "$DOWNLOADS" ]; then
