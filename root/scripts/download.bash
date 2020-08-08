@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.1.01"
+	echo "############################################ SCRIPT VERSION 1.1.02"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -65,18 +65,20 @@ Configuration () {
 		fi
 	fi
 
-	# verify LIBRARY
-	if [ -d "$DOWNLOADS" ]; then
+	# verify downloads location
+	if [ -d "/downloads-amd" ]; then
+		DOWNLOADS="/downloads-amd"
 		echo "DOWNLOADS Location: $DOWNLOADS"
-		if [ ! -f "$DOWNLOADS/amd/dlclient" ]; then
-			mkdir -p "$DOWNLOADS/amd/dlclient"
-			chmod 0777 -R "$DOWNLOADS/amd/dlclient"
-		fi
-		sed -i "s%/downloadfolder%$DOWNLOADS/amd/dlclient%g" "/xdg/deemix/config.json"
+		sed -i "s%/downloadfolder%/downloads-amd%g" "/xdg/deemix/config.json"
 	else
-		echo "ERROR: LIBRARY setting invalid, currently set to: $DOWNLOADS"
-		echo "ERROR: LIBRARY Expected Valid Setting: /your/path/to/music/downloads"
-		error=1
+		if [ -d "$DOWNLOADS" ]; then
+			echo "DOWNLOADS Location: $DOWNLOADS"
+			sed -i "s%/downloadfolder%$DOWNLOADS/amd/dlclient%g" "/xdg/deemix/config.json"
+		else
+			echo "ERROR: DOWNLOADS setting invalid, currently set to: $DOWNLOADS"
+			echo "ERROR: DOWNLOADS Expected Valid Setting: /your/path/to/music/downloads"
+			error=1
+		fi
 	fi
 
 	if [ ! -z "$ARL_TOKEN" ]; then
