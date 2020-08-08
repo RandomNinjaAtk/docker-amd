@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.2.2"
+	echo "############################################ SCRIPT VERSION 1.2.3"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -403,6 +403,7 @@ WantedMode () {
 				else
 					searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[]")"
 				fi
+				deezersearchcount="$(echo "$searchdata" | jq -r ".album.id" | sort -u | wc -l)"
 				echo "$logheader :: $deezersearchcount Albums Found"
 				if [ -z "$deezersearchalbumid" ]; then
 					if [ ! -d "/config/scripts/temp" ]; then
