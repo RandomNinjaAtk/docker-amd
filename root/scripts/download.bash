@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.1.04"
+	echo "############################################ SCRIPT VERSION 1.1.1"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -369,9 +369,12 @@ WantedMode () {
 				deezersearchalbumid=""
 				deezeralbumtitle=""
 				if [ "$albumartistname" !=	"Various Artists" ]; then
+					echo "$logheader :: Searching using Arist Name + Album Name"
 					deezersearchurl="https://api.deezer.com/search?q=artist:%22${albumartistnamesearch}%22%20album:%22${albumtitlesearch}%22&limit=1000"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
+					
 				else
+					echo "$logheader :: Searching using Album Name"
 					deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22&limit=1000"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
 				fi
@@ -379,9 +382,11 @@ WantedMode () {
 				deezersearchcount="$(echo "$deezeralbumsearchdata" | jq -r ".total")"
 				if [ "$deezersearchcount" == "0" ]; then
 					if [ "$albumartistname" !=	"Various Artists" ]; then
+						echo "$logheader :: No results found, fallback search..."
+						echo "$logheader :: Searching using Album Name"
 						deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22&limit=1000"
 						deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
-						searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[] | select(.artist.name | contains(\"$artistcleans\"))")"
+						searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[]")"
 					else
 						error=1
 						continue
@@ -400,6 +405,7 @@ WantedMode () {
 								deezerid=${deezersearchalbumid[$id]}
 								deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
 								deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+								deezeralbumartist="$(echo "$deezeralbumdata" | jq -r ".artist.name")"
 								deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
 								deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
 								deezeralbumyear="${deezeralbumdate:0:4}"
@@ -410,6 +416,16 @@ WantedMode () {
 									deezersearchalbumid=""
 									continue
 								fi
+								
+								diff=$(levenshtein "${albumartistname,,}" "${deezeralbumartist,,}")
+								if [ "$diff" -le "2" ]; then
+									echo "$logheader :: ${albumartistname,,} vs ${deezeralbumartist,,} :: Distance = $diff :: Artist Name Match"
+									deezersearchalbumid="$deezerid"
+								else
+									echo "$logheader :: ${albumartistname,,} vs ${deezeralbumartist,,} :: Distance = $diff :: ERROR :: Artist Name did not match"
+									deezersearchalbumid=""
+									continue
+								fi
 
 								diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
 								if [ "$diff" -le "1" ]; then
@@ -417,6 +433,7 @@ WantedMode () {
 									deezersearchalbumid="$deezerid"
 									break
 								else
+									echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: EXPLICIT :: ERROR :: NO MATCH FOUND"
 									deezersearchalbumid=""
 								fi
 							done
@@ -438,6 +455,7 @@ WantedMode () {
 							deezerid=${deezersearchalbumid[$id]}
 							deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
 							deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+							deezeralbumartist="$(echo "$deezeralbumdata" | jq -r ".artist.name")"
 							deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
 							deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
 							deezeralbumyear="${deezeralbumdate:0:4}"
@@ -448,12 +466,24 @@ WantedMode () {
 								deezersearchalbumid=""
 								continue
 							fi
+							
+							diff=$(levenshtein "${albumartistname,,}" "${deezeralbumartist,,}")
+							if [ "$diff" -le "2" ]; then
+								echo "$logheader :: ${albumartistname,,} vs ${deezeralbumartist,,} :: Distance = $diff :: Artist Name Match"
+								deezersearchalbumid="$deezerid"
+							else
+								echo "$logheader :: ${albumartistname,,} vs ${deezeralbumartist,,} :: Distance = $diff :: ERROR :: Artist Name did not match"
+								deezersearchalbumid=""
+								continue
+							fi
+							
 							diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
 							if [ "$diff" -le "1" ]; then
 								echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: ALL :: MATCH"
 								deezersearchalbumid="$deezerid"
 								break
 							else
+								echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: ALL :: ERROR :: NO MATCH FOUND"
 								deezersearchalbumid=""
 							fi
 						done
@@ -470,6 +500,7 @@ WantedMode () {
 								deezerid=${deezersearchalbumid[$id]}
 								deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
 								deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+								deezeralbumartist="$(echo "$deezeralbumdata" | jq -r ".artist.name")"
 								deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
 								deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
 								deezeralbumyear="${deezeralbumdate:0:4}"
@@ -480,6 +511,16 @@ WantedMode () {
 									deezersearchalbumid=""
 									continue
 								fi
+								
+								diff=$(levenshtein "${albumartistname,,}" "${deezeralbumartist,,}")
+								if [ "$diff" -le "2" ]; then
+									echo "$logheader :: ${albumartistname,,} vs ${deezeralbumartist,,} :: Distance = $diff :: Artist Name Match"
+									deezersearchalbumid="$deezerid"
+								else
+									echo "$logheader :: ${albumartistname,,} vs ${deezeralbumartist,,} :: Distance = $diff :: ERROR :: Artist Name did not match"
+									deezersearchalbumid=""
+									continue
+								fi
 
 								diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
 								if [ "$diff" -le "$MatchDistance" ]; then
@@ -487,6 +528,7 @@ WantedMode () {
 									deezersearchalbumid="$deezerid"
 									break
 								else
+									echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: EXPLICIT :: ERROR :: NO MATCH FOUND"
 									deezersearchalbumid=""
 								fi
 							done
@@ -508,6 +550,7 @@ WantedMode () {
 							deezerid=${deezersearchalbumid[$id]}
 							deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
 							deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+							deezeralbumartist="$(echo "$deezeralbumdata" | jq -r ".artist.name")"
 							deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
 							deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
 							deezeralbumyear="${deezeralbumdate:0:4}"
@@ -518,12 +561,23 @@ WantedMode () {
 								deezersearchalbumid=""
 								continue
 							fi
+							
+							diff=$(levenshtein "${albumartistname,,}" "${deezeralbumartist,,}")
+							if [ "$diff" -le "2" ]; then
+								echo "$logheader :: ${albumartistname,,} vs ${deezeralbumartist,,} :: Distance = $diff :: Artist Name Match"
+								deezersearchalbumid="$deezerid"
+							else
+								echo "$logheader :: ${albumartistname,,} vs ${deezeralbumartist,,} :: Distance = $diff :: ERROR :: Artist Name did not match"
+								deezersearchalbumid=""
+								continue
+							fi
 							diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
 							if [ "$diff" -le "$MatchDistance" ]; then
 								echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: ALL :: MATCH"
 								deezersearchalbumid="$deezerid"
 								break
 							else
+								echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: ALL :: ERROR :: NO MATCH FOUND"
 								deezersearchalbumid=""
 							fi
 						done
