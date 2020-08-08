@@ -23,7 +23,7 @@ Configuration () {
 	else
 		echo "Automatic Start: DISABLED"
 	fi
-	
+
 	# Verify Lidarr Connectivity
 	lidarrtest=$(curl -s "$LidarrUrl/api/v1/system/status?apikey=${LidarrAPIkey}" | jq -r ".version")
 	if [ ! -z "$lidarrtest" ]; then
@@ -40,8 +40,8 @@ Configuration () {
 		echo "ERROR: API Key: $LidarrAPIkey"
 		error=1
 	fi
-    
-    # Verify Musicbrainz DB Connectivity
+
+	# Verify Musicbrainz DB Connectivity
 	musicbrainzdbtest=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/artist/f59c5520-5f46-4d2c-b2c4-822eabf53419?fmt=json")
 	musicbrainzdbtestname=$(echo "${musicbrainzdbtest}"| jq -r '.name')
 	if [ "$musicbrainzdbtestname" != "Linkin Park" ]; then
@@ -72,7 +72,7 @@ Configuration () {
 			mkdir -p "$DOWNLOADS/amd/dlclient"
 			chmod 0777 -R "$DOWNLOADS/amd/dlclient"
 		fi
-        sed -i "s%/downloadfolder%$DOWNLOADS/amd/dlclient%g" "/xdg/deemix/config.json"
+		sed -i "s%/downloadfolder%$DOWNLOADS/amd/dlclient%g" "/xdg/deemix/config.json"
 	else
 		echo "ERROR: LIBRARY setting invalid, currently set to: $DOWNLOADS"
 		echo "ERROR: LIBRARY Expected Valid Setting: /your/path/to/music/downloads"
@@ -81,17 +81,17 @@ Configuration () {
 
 	if [ ! -z "$ARL_TOKEN" ]; then
 		echo "ARL Token: Configured"
-        if [ -f "$XDG_CONFIG_HOME/deemix/.arl" ]; then
-            rm "$XDG_CONFIG_HOME/deemix/.arl"
-        fi
-         if [ ! -f "$XDG_CONFIG_HOME/deemix/.arl" ]; then 
-            echo -n "$ARL_TOKEN" > "$XDG_CONFIG_HOME/deemix/.arl"
-        fi
+		if [ -f "$XDG_CONFIG_HOME/deemix/.arl" ]; then
+			rm "$XDG_CONFIG_HOME/deemix/.arl"
+		fi
+		 if [ ! -f "$XDG_CONFIG_HOME/deemix/.arl" ]; then
+			echo -n "$ARL_TOKEN" > "$XDG_CONFIG_HOME/deemix/.arl"
+		fi
 	else
 		echo "ERROR: ARL_TOKEN setting invalid, currently set to: $ARL_TOKEN"
 		error=1
 	fi
-	
+
 	if [ ! -z "$Concurrency" ]; then
 		echo "Audio: Concurrency: $Concurrency"
 		sed -i "s%\"queueConcurrency\": 3%\"queueConcurrency\": $Concurrency%g" "/xdg/deemix/config.json"
@@ -100,7 +100,7 @@ Configuration () {
 		Concurrency="1"
 		sed -i "s%\"queueConcurrency\": 3%\"queueConcurrency\": $Concurrency%g" "/xdg/deemix/config.json"
 	fi
-	
+
 	if [ "$quality" == "FLAC" ]; then
 		echo "Audio: Download Quality: FLAC"
 		echo "Audio: Download Bitrate: lossless"
@@ -122,8 +122,8 @@ Configuration () {
 		echo "Audio: Explicit Preferred: DISABLED"
 	fi
 
-    if [ ! -z "$MatchDistance" ]; then
-        echo "Audio: Match Distance: $MatchDistance"
+	if [ ! -z "$MatchDistance" ]; then
+		echo "Audio: Match Distance: $MatchDistance"
 	else
 		echo "ERROR: MatchDistance not set, using default..."
 		MatchDistance="10"
@@ -131,7 +131,7 @@ Configuration () {
 	fi
 
 	if [ ! -z "$FilePermissions" ]; then
-        echo "Audio: File Permissions: $FilePermissions"
+		echo "Audio: File Permissions: $FilePermissions"
 	else
 		echo "ERROR: FilePermissions not set, using default..."
 		FilePermissions="666"
@@ -139,7 +139,7 @@ Configuration () {
 	fi
 
 	if [ ! -z "$FolderPermissions" ]; then
-        echo "Audio: Folder Permissions: $FolderPermissions"
+		echo "Audio: Folder Permissions: $FolderPermissions"
 	else
 		echo "ERROR: FolderPermissions not set, using default..."
 		FolderPermissions="766"
@@ -166,16 +166,16 @@ CacheEngine () {
 	fi
 
 	N=$Concurrency
-    (
-		for id in ${!MBArtistID[@]}; do 
+	(
+		for id in ${!MBArtistID[@]}; do
 			((i=i%N)); ((i++==0)) && wait
 			artistnumber=$(( $id + 1 ))
 			ParallelCache "${MBArtistID[$id]}" &
 		done
 		wait
-    )
-    wait
-	
+	)
+	wait
+
 	echo "Sleep 15 seconds to allow processes to complete"
 	sleep 15
 	if [ -d "/config/temp" ]; then
@@ -186,8 +186,8 @@ CacheEngine () {
 ParallelCache () {
 
 		mbid="$1"
-        LidArtistNameCap="$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .artistName")"
-        sanatizedartistname="$(echo "${LidArtistNameCap}" | sed -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g' -e 's/^\(nul\|prn\|con\|lpt[0-9]\|com[0-9]\|aux\)\(\.\|$\)//i' -e 's/^\.*$//' -e 's/^$/NONAME/')"
+		LidArtistNameCap="$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .artistName")"
+		sanatizedartistname="$(echo "${LidArtistNameCap}" | sed -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g' -e 's/^\(nul\|prn\|con\|lpt[0-9]\|com[0-9]\|aux\)\(\.\|$\)//i' -e 's/^\.*$//' -e 's/^$/NONAME/')"
 		if [ "$LidArtistNameCap" ==	"Various Artists" ]; then
 			exit
 		fi
@@ -199,8 +199,8 @@ ParallelCache () {
 			fi
 		fi
 
-        mbrainzurlcount=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/artist/$mbid?inc=url-rels&fmt=json" | jq -r ".relations | .[] | .url | .resource" | wc -l)
-	
+		mbrainzurlcount=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/artist/$mbid?inc=url-rels&fmt=json" | jq -r ".relations | .[] | .url | .resource" | wc -l)
+
 		if [ -f "/config/cache/$sanatizedartistname-$mbid-info.json" ]; then
 			cachedurlcount=$(cat "/config/cache/$sanatizedartistname-$mbid-info.json" | jq -r ".relations | .[] | .url | .resource" | wc -l)
 			if [ "$mbrainzurlcount" -ne "$cachedurlcount" ]; then
@@ -212,21 +212,21 @@ ParallelCache () {
 			echo "${artistnumber} of ${wantedtotal} :: MBZDB CACHE :: $LidArtistNameCap :: Caching Musicbrainz Artist Info..."
 			curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/artist/$mbid?inc=url-rels+genres&fmt=json" -o "/config/cache/$sanatizedartistname-$mbid-info.json"
 			sleep $MBRATELIMIT
-		else 
+		else
 			echo "${artistnumber} of ${wantedtotal} :: MBZDB CACHE :: $LidArtistNameCap :: Musicbrainz Artist Info Cache Valid..."
 		fi
-		
-		
+
+
 		releases=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/release?artist=$mbid&inc=genres+recordings+url-rels+release-groups&limit=1&offset=0&fmt=json")
 		sleep $MBRATELIMIT
 		newreleasecount=$(echo "${releases}"| jq -r '."release-count"')
-				
+
 		if [ ! -f "/config/cache/$sanatizedartistname-$mbid-releases.json" ]; then
 			releasecount=$(echo "${releases}"| jq -r '."release-count"')
 		else
 			releasecount=$(cat "/config/cache/$sanatizedartistname-$mbid-releases.json" | jq -r '.[] | ."release-count"' | head -n 1)
 		fi
-			
+
 		if [ $newreleasecount != $releasecount ]; then
 			echo "$artistnumber of $wantedtotal :: MBZDB CACHE :: $LidArtistNameCap :: Cache needs update, cleaning..."
 			if [ -f "/config/cache/$sanatizedartistname-$mbid-releases.json" ]; then
@@ -243,8 +243,8 @@ ParallelCache () {
 		if [ ! -f "/config/cache/$sanatizedartistname-$mbid-releases.json" ]; then
 			if [ ! -d "/config/temp" ]; then
 				mkdir "/config/temp"
-			fi	
-	
+			fi
+
 			offsetcount=$(( $releasecount / 100 ))
 			for ((i=0;i<=$offsetcount;i++)); do
 				if [ ! -f "release-page-$i.json" ]; then
@@ -290,10 +290,10 @@ WantedMode () {
 		albumdeezerurl=""
 		error=0
 		lidarralbumdata=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/album?albumIds=${lidarralbumid}")
-        OLDIFS="$IFS"
-    	IFS=$'\n'
+		OLDIFS="$IFS"
+		IFS=$'\n'
 		lidarralbumdrecordids=($(echo "${lidarralbumdata}" | jq -r '.[] | .releases | .[] | .title' | sort -u))
-        IFS="$OLDIFS"
+		IFS="$OLDIFS"
 		albumreleasegroupmbzid=$(echo "${lidarralbumdata}"| jq -r '.[] | .foreignAlbumId')
 		lidarralbumtype="$(echo "${lidarralbumdata}"| jq -r '.[] | .albumType')"
 		lidarralbumtypelower="$(echo ${lidarralbumtype,,})"
@@ -330,7 +330,7 @@ WantedMode () {
 		else
 			echo "$logheader :: SEARCHING..."
 		fi
-		
+
 		if [  -d "$albumbimportfolder" ]; then
 			echo "$logheader :: Already Downloaded, skipping..."
 			LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${albumbimportfolder}\"}")
@@ -407,7 +407,7 @@ WantedMode () {
 									deezersearchalbumid=""
 									continue
 								fi
-								
+
 								diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
 								if [ "$diff" -le "1" ]; then
 									echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: EXPLICIT :: MATCH"
@@ -426,15 +426,15 @@ WantedMode () {
 						fi
 					fi
 				fi
-				
+
 				if [ -z "$deezersearchalbumid" ]; then
 					deezersearchalbumid=($(echo "$searchdata" | jq -r ".album.id" | sort -u))
-				
-                    if [ ! -z "$deezersearchalbumid" ]; then
-                        for id in "${!deezersearchalbumid[@]}"; do
-                            deezerid=${deezersearchalbumid[$id]}
+
+					if [ ! -z "$deezersearchalbumid" ]; then
+						for id in "${!deezersearchalbumid[@]}"; do
+							deezerid=${deezersearchalbumid[$id]}
 							deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
-                            deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+							deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
 							deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
 							deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
 							deezeralbumyear="${deezeralbumdate:0:4}"
@@ -445,17 +445,17 @@ WantedMode () {
 								deezersearchalbumid=""
 								continue
 							fi
-                            diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
-                            if [ "$diff" -le "1" ]; then
-                                echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: ALL :: MATCH"
-                                deezersearchalbumid="$deezerid"
-                                break
-                            else
-                                deezersearchalbumid=""
-                            fi
-                        done
-                    fi
-                fi
+							diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
+							if [ "$diff" -le "1" ]; then
+								echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: ALL :: MATCH"
+								deezersearchalbumid="$deezerid"
+								break
+							else
+								deezersearchalbumid=""
+							fi
+						done
+					fi
+				fi
 
 				if [ -z "$deezersearchalbumid" ]; then
 					if [ "$ExplicitPreferred" == "true" ]; then
@@ -477,7 +477,7 @@ WantedMode () {
 									deezersearchalbumid=""
 									continue
 								fi
-								
+
 								diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
 								if [ "$diff" -le "$MatchDistance" ]; then
 									echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: EXPLICIT :: MATCH"
@@ -496,15 +496,15 @@ WantedMode () {
 						fi
 					fi
 				fi
-				
+
 				if [ -z "$deezersearchalbumid" ]; then
 					deezersearchalbumid=($(echo "$searchdata" | jq -r ".album.id" | sort -u))
-				
-                    if [ ! -z "$deezersearchalbumid" ]; then
-                        for id in "${!deezersearchalbumid[@]}"; do
-                            deezerid=${deezersearchalbumid[$id]}
+
+					if [ ! -z "$deezersearchalbumid" ]; then
+						for id in "${!deezersearchalbumid[@]}"; do
+							deezerid=${deezersearchalbumid[$id]}
 							deezeralbumdata=$(curl -s "https://api.deezer.com/album/$deezerid")
-                            deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+							deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
 							deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
 							deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
 							deezeralbumyear="${deezeralbumdate:0:4}"
@@ -515,17 +515,17 @@ WantedMode () {
 								deezersearchalbumid=""
 								continue
 							fi
-                            diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
-                            if [ "$diff" -le "$MatchDistance" ]; then
-                                echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: ALL :: MATCH"
-                                deezersearchalbumid="$deezerid"
-                                break
-                            else
-                                deezersearchalbumid=""
-                            fi
-                        done
-                    fi
-                fi
+							diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
+							if [ "$diff" -le "$MatchDistance" ]; then
+								echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezerid :: ALL :: MATCH"
+								deezersearchalbumid="$deezerid"
+								break
+							else
+								deezersearchalbumid=""
+							fi
+						done
+					fi
+				fi
 
 				if [ "$explicit" == "true" ]; then
 					echo "$logheader :: Explicit Release Found"
@@ -545,7 +545,7 @@ WantedMode () {
 		else
 			error=0
 		fi
-		
+
 		if [ $error == 1 ]; then
 			echo "$logheader :: ERROR :: No deezer album url found"
 			echo "$albumartistname :: $albumreleasegroupmbzid :: $albumtitle"  >> "/config/logs/notfound.log"
@@ -563,7 +563,7 @@ WantedMode () {
 			deezeralbumtitle="$albumtitle"
 		fi
 
-        albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
+		albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
 		albumbimportfoldername="$(basename "$albumbimportfolder")"
 
 		if [ ! -d "$albumbimportfolder" ]; then
@@ -596,9 +596,9 @@ WantedMode () {
 		else
 			echo "$filelogheader :: $albumdeezerurl"  >> "/config/logs/download.log"
 		fi
-		
+
 		TagFix
-		
+
 		if [ ! -d "$DOWNLOADS/amd/import" ]; then
 			mkdir -p "$DOWNLOADS/amd/import"
 			chmod $FolderPermissions "$DOWNLOADS/amd/import"
@@ -630,7 +630,7 @@ CreateDownloadFolders () {
 	if [ ! -d "$DOWNLOADS/amd/import" ]; then
 		mkdir -p "$DOWNLOADS/amd/import"
 	fi
-	
+
 	if [ ! -d "$DOWNLOADS/amd/dlclient" ]; then
 		mkdir -p "$DOWNLOADS/amd/dlclient"
 	else
@@ -643,12 +643,12 @@ SetFolderPermissions () {
 		chmod $FolderPermissions "$DOWNLOADS/amd/import"
 		chown -R abc:abc "$DOWNLOADS/amd/import"
 	fi
-	
+
 	if [ -d "$DOWNLOADS/amd/dlclient" ]; then
 		chmod $FolderPermissions "$DOWNLOADS/amd/dlclient"
 		chown -R abc:abc "$DOWNLOADS/amd/dlclient"
 	fi
-	
+
 	if [ -d "$DOWNLOADS/amd" ]; then
 		chmod $FolderPermissions "$DOWNLOADS/amd"
 		chown -R abc:abc "$DOWNLOADS/amd"
@@ -661,7 +661,7 @@ TagFix () {
 			echo "ERROR: FLAC verification utility not installed (ubuntu: apt-get install -y flac)"
 		else
 			for fname in "$DOWNLOADS"/amd/dlclient/*.flac; do
-				filename="$(basename "$fname")"				
+				filename="$(basename "$fname")"
 				metaflac "$fname" --remove-tag=ALBUMARTIST
 				metaflac "$fname" --set-tag=ALBUMARTIST="$albumartistname"
 				metaflac "$fname" --set-tag=MUSICBRAINZ_ALBUMARTISTID="$albumartistmbzid"
@@ -684,38 +684,38 @@ TagFix () {
 }
 
 function levenshtein {
-    if (( $# != 2 )); then
-        echo "Usage: $0 word1 word2" >&2
-    elif (( ${#1} < ${#2} )); then
-        levenshtein "$2" "$1"
-    else
-        local str1len=${#1}
-        local str2len=${#2}
-        local d
+	if (( $# != 2 )); then
+		echo "Usage: $0 word1 word2" >&2
+	elif (( ${#1} < ${#2} )); then
+		levenshtein "$2" "$1"
+	else
+		local str1len=${#1}
+		local str2len=${#2}
+		local d
 
-        for (( i = 0; i <= (str1len+1)*(str2len+1); i++ )); do
-            d[i]=0
-        done
+		for (( i = 0; i <= (str1len+1)*(str2len+1); i++ )); do
+			d[i]=0
+		done
 
-        for (( i = 0; i <= str1len; i++ )); do
-            d[i+0*str1len]=$i
-        done
+		for (( i = 0; i <= str1len; i++ )); do
+			d[i+0*str1len]=$i
+		done
 
-        for (( j = 0; j <= str2len; j++ )); do
-            d[0+j*(str1len+1)]=$j
-        done
+		for (( j = 0; j <= str2len; j++ )); do
+			d[0+j*(str1len+1)]=$j
+		done
 
-        for (( j = 1; j <= str2len; j++ )); do
-            for (( i = 1; i <= str1len; i++ )); do
-                [ "${1:i-1:1}" = "${2:j-1:1}" ] && local cost=0 || local cost=1
-                del=$(( d[(i-1)+str1len*j]+1 ))
-                ins=$(( d[i+str1len*(j-1)]+1 ))
-                alt=$(( d[(i-1)+str1len*(j-1)]+cost ))
-                d[i+str1len*j]=$( echo -e "$del\n$ins\n$alt" | sort -n | head -1 )
-            done
-        done
-        echo ${d[str1len+str1len*(str2len)]}
-    fi
+		for (( j = 1; j <= str2len; j++ )); do
+			for (( i = 1; i <= str1len; i++ )); do
+				[ "${1:i-1:1}" = "${2:j-1:1}" ] && local cost=0 || local cost=1
+				del=$(( d[(i-1)+str1len*j]+1 ))
+				ins=$(( d[i+str1len*(j-1)]+1 ))
+				alt=$(( d[(i-1)+str1len*(j-1)]+cost ))
+				d[i+str1len*j]=$( echo -e "$del\n$ins\n$alt" | sort -n | head -1 )
+			done
+		done
+		echo ${d[str1len+str1len*(str2len)]}
+	fi
 }
 
 CreateDownloadFolders
