@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.1.02"
+	echo "############################################ SCRIPT VERSION 1.1.03"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -69,7 +69,7 @@ Configuration () {
 	if [ -d "/downloads-amd" ]; then
 		DOWNLOADS="/downloads-amd"
 		echo "DOWNLOADS Location: $DOWNLOADS"
-		sed -i "s%/downloadfolder%/downloads-amd%g" "/xdg/deemix/config.json"
+		sed -i "s%/downloadfolder%/downloads-amd/amd/dlclient%g" "/xdg/deemix/config.json"
 	else
 		if [ -d "$DOWNLOADS" ]; then
 			echo "DOWNLOADS Location: $DOWNLOADS"
