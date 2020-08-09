@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.2.4"
+	echo "############################################ SCRIPT VERSION 1.2.5"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -782,10 +782,10 @@ function levenshtein {
 	fi
 }
 
+Configuration
 CreateDownloadFolders
 SetFolderPermissions
 CleanupFailedImports
-Configuration
 CacheEngine
 WantedMode
 
