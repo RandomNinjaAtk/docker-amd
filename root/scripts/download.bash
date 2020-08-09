@@ -307,14 +307,14 @@ LidarrList () {
 		rm "/config/scripts/lidarr-monitored-list.json"
 	fi
 	
-	if [[ "$list" == "missing" || "$list" == "both" ]]; then
+	if [[ "$LIST" == "missing" || "$LIST" == "both" ]]; then
 		echo "Downloading missing list..."
 		curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/missing/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate" -o "/config/scripts/temp-lidarr-missing.json"
 		missingtotal=$(cat "/config/scripts/temp-lidarr-missing.json" | jq -r '.records | .[] | .id' | wc -l)
 		echo "FINDING MISSING ALBUMS: ${missingtotal} Found"
 	fi
 	
-	if [[ "$list" == "cutoff" || "$list" == "both" ]]; then
+	if [[ "$LIST" == "cutoff" || "$LIST" == "both" ]]; then
 		echo "Downloading cutoff list..."
 		curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/cutoff/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate" -o "/config/scripts/temp-lidarr-cutoff.json"
 		cuttofftotal=$(cat "/config/scripts/temp-lidarr-cutoff.json" | jq -r '.records | .[] | .id' | wc -l)
