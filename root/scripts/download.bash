@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.2.5"
+	echo "############################################ SCRIPT VERSION 1.3.0"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -107,6 +107,16 @@ Configuration () {
 		LIST="missing"
 	fi
 	
+	if [ -z "$SkipFuzzy" ]; then
+		SkipFuzzy="true"
+		echo "ERROR: SkipFuzzy not set, setting to default"
+	fi
+	
+	if [ "$SkipFuzzy" == "true" ]; then
+		echo "Audio: Skip Fuzzy Searching: ENABLED (does not apply to Varoius Artists)"
+	else
+		echo "Audio: Skip Fuzzy Searching: DISABLE"
+	fi	
 
 	if [ ! -z "$Concurrency" ]; then
 		echo "Audio: Concurrency: $Concurrency"
@@ -359,6 +369,20 @@ WantedMode () {
 		albumclean="$(echo "$albumtitle" | sed -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 		albumartistmbzid=$(echo "${lidarralbumdata}"| jq -r '.[].artist.foreignArtistId')
 		albumartistname=$(echo "${lidarralbumdata}"| jq -r '.[].artist.artistName')
+		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
+		filelogheader="$albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"		
+		if [ -f "/config/logs/notfound.log" ]; then
+			if cat "/config/logs/notfound.log" | grep -i ":: $albumreleasegroupmbzid ::" | read; then
+				echo "$logheader :: PREVOUSLY NOT FOUND SKIPPING..."
+				continue
+			else
+				echo "$logheader :: SEARCHING..."
+			fi
+		else
+			echo "$logheader :: SEARCHING..."
+		fi
+		sanatizedartistname="$(echo "${albumartistname}" | sed -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g' -e 's/^\(nul\|prn\|con\|lpt[0-9]\|com[0-9]\|aux\)\(\.\|$\)//i' -e 's/^\.*$//' -e 's/^$/NONAME/')"
+		albumartistlistlinkid=($(echo "${lidarralbumdata}"| jq -r '.[].artist | .links | .[] | select(.name=="deezer") | .url' | sort -u | grep -o '[[:digit:]]*'))
 		if [ "$albumartistname" == "Korn" ]; then # Fix for online source naming convention...
 			originalartistname="$albumartistname"
 			albumartistname="KoЯn"
@@ -374,18 +398,6 @@ WantedMode () {
 		albumartistpath=$(echo "${lidarralbumdata}"| jq -r '.[].artist.path')
 		albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
 		albumbimportfoldername="$(basename "$albumbimportfolder")"
-		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
-		filelogheader="$albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
-		if [ -f "/config/logs/notfound.log" ]; then
-			if cat "/config/logs/notfound.log" | grep -i ":: $albumreleasegroupmbzid ::" | read; then
-				echo "$logheader :: PREVOUSLY NOT FOUND SKIPPING..."
-				continue
-			else
-				echo "$logheader :: SEARCHING..."
-			fi
-		else
-			echo "$logheader :: SEARCHING..."
-		fi
 
 		if [ -d "$albumbimportfolder" ]; then
 			echo "$logheader :: Already Downloaded, skipping..."
@@ -410,13 +422,122 @@ WantedMode () {
 			deezeralbumsearchdata=$(curl -s "${albumdeezerurl}")
 			errocheck="$(echo "$deezeralbumsearchdata" | jq -r ".error.code")"
 			if [ "$errocheck" != "null" ]; then
-				echo "$logheader :: ERROR :: Provided URL is broken, fallback to fuzzy search..."
+				echo "$logheader :: ERROR :: Provided URL is broken, fallback to artist search..."
 				albumdeezerurl=""
 			fi
 		fi
-
-
-		if [[ -z "$albumdeezerurl" && -z "$albumtidalurl" ]]; then
+		
+		if [ ! -z "${albumartistlistlinkid}" ]; then	
+			for id in ${!albumartistlistlinkid[@]}; do
+				currentprocess=$(( $id + 1 ))
+				deezerartistid="${albumartistlistlinkid[$id]}"
+				if [ ! -f "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json" ]; then
+					curl -s "https://api.deezer.com/artist/$deezerartistid/albums&limit=1000" -o "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json"
+					echo "$logheader :: Downloading Artist Albums List"
+				fi
+				
+				if  [ "$lidarralbumtypelower" != "single" ]; then
+					DeezerArtistAlbumListSortTotal=$(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json" | jq '.data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.record_type!="single") | .id' | wc -l)
+					DeezerArtistAlbumListAlbumID=($(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json" | jq '.data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.record_type!="single") | .id'))		
+				else
+					DeezerArtistAlbumListSortTotal=$(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json" | jq '.data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.record_type=="single") | .id' | wc -l)
+					DeezerArtistAlbumListAlbumID=($(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json" | jq '.data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.record_type=="single") | .id'))
+				fi
+				
+				for id in "${!lidarralbumdrecordids[@]}"; do
+					recordtitle=${lidarralbumdrecordids[$id]}
+					albumtitle="$recordtitle"
+					echo "$logheader :: Checking $DeezerArtistAlbumListSortTotal Albums for match ($albumtitle) with Max Distance Score of 1 or less"
+					for id in ${!DeezerArtistAlbumListAlbumID[@]}; do
+						currentprocess=$(( $id + 1 ))
+						deezeralbumid="${DeezerArtistAlbumListAlbumID[$id]}"
+						deezeralbumdata="$(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json" | jq ".data | .[] | select(.id==$deezeralbumid)")"
+						deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+						deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
+						deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
+						deezeralbumyear="${deezeralbumdate:0:4}"
+						explicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
+						diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
+						if [ "$diff" -le "1" ]; then
+							echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezeralbumid :: MATCH"
+							deezersearchalbumid="$deezeralbumid"
+							break
+						else
+							deezersearchalbumid=""
+							continue
+						fi
+					done
+					if [ -z "$deezersearchalbumid" ]; then
+						echo "$logheader :: $albumtitle :: ERROR :: NO MATCH FOUND"
+						albumdeezerurl=""
+					else
+						albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
+						break
+					fi
+				done
+				
+				if [ -z "$albumdeezerurl" ]; then
+					for id in "${!lidarralbumdrecordids[@]}"; do
+						recordtitle=${lidarralbumdrecordids[$id]}
+						albumtitle="$recordtitle"
+						echo "$logheader :: Checking $DeezerArtistAlbumListSortTotal Albums for match ($albumtitle) with Max Distance Score of 4 or less"
+						for id in ${!DeezerArtistAlbumListAlbumID[@]}; do
+							currentprocess=$(( $id + 1 ))
+							deezeralbumid="${DeezerArtistAlbumListAlbumID[$id]}"
+							deezeralbumdata="$(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json" | jq ".data | .[] | select(.id==$deezeralbumid)")"
+							deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+							deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
+							deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
+							deezeralbumyear="${deezeralbumdate:0:4}"
+							explicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
+							diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
+							if [ "$diff" -le "4" ]; then
+								echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezeralbumid :: MATCH"
+								deezersearchalbumid="$deezeralbumid"
+								break
+							else
+								deezersearchalbumid=""
+								continue
+							fi
+						done
+						if [ -z "$deezersearchalbumid" ]; then
+							echo "$logheader :: $albumtitle :: ERROR :: NO MATCH FOUND"
+							albumdeezerurl=""
+						else
+							albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
+							break
+						fi
+					done
+				fi
+			done
+			
+			if [ ! -z "$albumdeezerurl" ]; then
+				albumreleaseyear="$deezeralbumyear"
+				lidarralbumtype="$deezeralbumtype"
+				albumclean="$(echo "$deezeralbumtitle" | sed -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
+				albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
+			fi
+		else
+			if ! [ -f "/config/logs/musicbrainzerror.log" ]; then
+				touch "/config/logs/musicbrainzerror.log"
+			fi		
+			if [ -f "/config/logs/musicbrainzerror.log" ]; then
+				echo "$logheader :: ERROR: musicbrainz id: $albumartistmbzid is missing deezer link, see: \"/config/logs/musicbrainzerror.log\" for more detail..."
+				if cat "musicbrainzerror.log" | grep "$albumartistmbzid" | read; then
+					sleep 0
+				else
+					echo "Update Musicbrainz Relationship Page: https://musicbrainz.org/artist/$albumartistmbzid/relationships for \"${albumartistname}\" with Deezer Artist Link" >> "/config/logs/musicbrainzerror.log"
+				fi
+			fi
+		fi
+		
+		if [[ "$SkipFuzzy" == "true" && "$albumartistname" != "Various Artists" ]]; then
+			if [ -z "$albumdeezerurl" ]; then
+				echo "$logheader :: Skipping fuzzy search..."
+				error=1
+			fi		
+		elif [[ -z "$albumdeezerurl" && -z "$albumtidalurl" ]]; then
+			echo "$logheader :: ERROR :: Fallback to fuzzy search..."
 			echo "$logheader :: FUZZY SEARCHING..."
 			for id in "${!lidarralbumdrecordids[@]}"; do
 				recordtitle=${lidarralbumdrecordids[$id]}
