@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.2.3"
+	echo "############################################ SCRIPT VERSION 1.2.4"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -94,6 +94,19 @@ Configuration () {
 		echo "ERROR: ARL_TOKEN setting invalid, currently set to: $ARL_TOKEN"
 		error=1
 	fi
+	
+	if [ "$LIST" == "both" ]; then
+		echo "Audio: Wanted List Type: Both (missing & cutoff)"
+	elif [ "$LIST" == "missing" ]; then
+		echo "Audio: Wanted List Type: Missing"
+	elif [ "$LIST" == "cutoff" ]; then
+		echo "Audio: Wanted List Type: Cutoff"
+	else
+		echo "ERROR: LIST type not selected, using default..."
+		echo "Audio: Wanted List Type: Missing"
+		LIST="missing"
+	fi
+	
 
 	if [ ! -z "$Concurrency" ]; then
 		echo "Audio: Concurrency: $Concurrency"
@@ -281,11 +294,51 @@ ParallelCache () {
 
 }
 
+LidarrList () {
+	if [ -f "temp-lidarr-missing.json" ]; then
+		rm "/config/scripts/temp-lidarr-missing.json"
+	fi
+
+	if [ -f "/config/scripts/temp-lidarr-cutoff.json" ]; then
+		rm "/config/scripts/temp-lidarr-cutoff.json"
+	fi
+
+	if [ -f "/config/scripts/lidarr-monitored-list.json" ]; then
+		rm "/config/scripts/lidarr-monitored-list.json"
+	fi
+	
+	if [[ "$list" == "missing" || "$list" == "both" ]]; then
+		echo "Downloading missing list..."
+		curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/missing/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate" -o "/config/scripts/temp-lidarr-missing.json"
+		missingtotal=$(cat "/config/scripts/temp-lidarr-missing.json" | jq -r '.records | .[] | .id' | wc -l)
+		echo "FINDING MISSING ALBUMS: ${missingtotal} Found"
+	fi
+	
+	if [[ "$list" == "cutoff" || "$list" == "both" ]]; then
+		echo "Downloading cutoff list..."
+		curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/cutoff/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate" -o "/config/scripts/temp-lidarr-cutoff.json"
+		cuttofftotal=$(cat "/config/scripts/temp-lidarr-cutoff.json" | jq -r '.records | .[] | .id' | wc -l)
+		echo "FINDING CUTOFF ALBUMS: ${cuttofftotal} Found"
+	fi
+	jq -s '.[]' /config/scripts/temp-lidarr-*.json > "/config/scripts/lidarr-monitored-list.json"
+	missinglistalbumids=($(cat "/config/scripts/lidarr-monitored-list.json" | jq -r '.records | .[] | .id'))
+	missinglisttotal=$(cat "/config/scripts/lidarr-monitored-list.json" | jq -r '.records | .[] | .id' | wc -l)
+	if [ -f "/config/scripts/temp-lidarr-missing.json" ]; then
+		rm "/config/scripts/temp-lidarr-missing.json"
+	fi
+
+	if [ -f "/config/scripts/temp-lidarr-cutoff.json" ]; then
+		rm "/config/scripts/temp-lidarr-cutoff.json"
+	fi
+
+	if [ -f "/config/scripts/lidarr-monitored-list.json" ]; then
+		rm "/config/scripts/lidarr-monitored-list.json"
+	fi
+}
+
 WantedMode () {
 	echo "############################################ DOWNLOAD AUDIO (WANTED MODE)"
-	echo "Aquiring wanted list..."
-	missinglist=$(curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/missing/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate")	missinglisttotal=$(echo "$missinglist" | jq -r '.records | .[] | .id' | wc -l)
-	missinglistalbumids=($(echo "$missinglist"| jq -r '.records | .[] | .id'))
+	LidarrList
 
 	for id in ${!missinglistalbumids[@]}; do
 		currentprocess=$(( $id + 1 ))
