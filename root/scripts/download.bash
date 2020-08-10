@@ -687,11 +687,6 @@ WantedMode () {
 						fi
 					done
 				fi
-				
-
-				if [ "$explicit" == "true" ]; then
-					echo "$logheader :: Explicit Release Found"
-				fi
 
 				if [ ! -z "$deezersearchalbumid" ]; then
 					albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
@@ -713,10 +708,13 @@ WantedMode () {
 			echo "$albumartistname :: $albumreleasegroupmbzid :: $albumtitle"  >> "/config/logs/notfound.log"
 			continue
 		fi
+		
+		if [ "$explicit" == "true" ]; then
+			echo "$logheader :: Explicit Release Found"
+		fi
 
 		albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
 		albumbimportfoldername="$(basename "$albumbimportfolder")"
-
 
 		if [ -f "/config/logs/download.log" ]; then
 			if cat "/config/logs/download.log" | grep -i "$albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder" | read; then
