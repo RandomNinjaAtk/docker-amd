@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.2"
+	echo "############################################ SCRIPT VERSION 1.3.3"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -214,7 +214,7 @@ ParallelCache () {
 		mbid="$1"
 		LidArtistNameCap="$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .artistName")"
 		sanatizedartistname="$(echo "${LidArtistNameCap}" | sed -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g' -e 's/^\(nul\|prn\|con\|lpt[0-9]\|com[0-9]\|aux\)\(\.\|$\)//i' -e 's/^\.*$//' -e 's/^$/NONAME/')"
-		if [ "$LidArtistNameCap" ==	"Various Artists" ]; then
+		if [ "$LidArtistNameCap" == "Various Artists" ]; then
 			exit
 		fi
 
@@ -487,6 +487,40 @@ WantedMode () {
 							break
 						fi
 					done
+					
+					if [ -z "$albumdeezerurl" ]; then
+						for id in "${!lidarralbumdrecordids[@]}"; do
+							recordtitle=${lidarralbumdrecordids[$id]}
+							albumtitle="$recordtitle"
+							echo "$logheader :: Checking $DeezerArtistAlbumListSortTotal Albums for match ($albumtitle) with Max Distance Score of $MatchDistance or less"
+							for id in ${!DeezerArtistAlbumListAlbumID[@]}; do
+								currentprocess=$(( $id + 1 ))
+								deezeralbumid="${DeezerArtistAlbumListAlbumID[$id]}"
+								deezeralbumdata="$(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json" | jq ".data | .[] | select(.id==$deezeralbumid)")"
+								deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+								deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
+								deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
+								deezeralbumyear="${deezeralbumdate:0:4}"
+								explicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
+								diff=$(levenshtein "${albumtitle,,}" "${deezeralbumtitle,,}")
+								if [ "$diff" -le "$MatchDistance" ]; then
+									echo "$logheader :: ${albumtitle,,} vs ${deezeralbumtitle,,} :: Distance = $diff :: $deezeralbumid :: MATCH"
+									deezersearchalbumid="$deezeralbumid"
+									break
+								else
+									deezersearchalbumid=""
+									continue
+								fi
+							done
+							if [ -z "$deezersearchalbumid" ]; then
+								echo "$logheader :: $albumtitle :: ERROR :: NO MATCH FOUND"
+								albumdeezerurl=""
+							else
+								albumdeezerurl="https://deezer.com/album/$deezersearchalbumid"
+								break
+							fi
+						done
+					fi
 				done
 
 				if [ ! -z "$albumdeezerurl" ]; then
@@ -529,7 +563,7 @@ WantedMode () {
 				deezersearchalbumid=""
 				deezeralbumtitle=""
 				explicit="false"
-				if [ "$albumartistname" !=	"Various Artists" ]; then
+				if [ "$albumartistname" != "Various Artists" ]; then
 					echo "$logheader :: Searching using $albumartistname + $albumtitle"
 					deezersearchurl="https://api.deezer.com/search?q=artist:%22${albumartistnamesearch}%22%20album:%22${albumtitlesearch}%22&limit=1000"
 					deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
