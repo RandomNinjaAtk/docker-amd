@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.3"
+	echo "############################################ SCRIPT VERSION 1.3.4"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -535,7 +535,7 @@ WantedMode () {
 				fi		
 				if [ -f "/config/logs/musicbrainzerror.log" ]; then
 					echo "$logheader :: ERROR: musicbrainz id: $albumartistmbzid is missing deezer link, see: \"/config/logs/musicbrainzerror.log\" for more detail..."
-					if cat "musicbrainzerror.log" | grep "$albumartistmbzid" | read; then
+					if cat "/config/logs/musicbrainzerror.log" | grep "$albumartistmbzid" | read; then
 						sleep 0
 					else
 						echo "Update Musicbrainz Relationship Page: https://musicbrainz.org/artist/$albumartistmbzid/relationships for \"${albumartistname}\" with Deezer Artist Link" >> "/config/logs/musicbrainzerror.log"
