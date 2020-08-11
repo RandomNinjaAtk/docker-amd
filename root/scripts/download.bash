@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.4"
+	echo "############################################ SCRIPT VERSION 1.3.5"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -436,28 +436,22 @@ WantedMode () {
 						curl -s "https://api.deezer.com/artist/$deezerartistid/albums&limit=1000" -o "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json"
 						echo "$logheader :: Downloading Artist Albums List"
 					fi
-					first=${albumtitle%% *}
-					firstlower=${first,,}
-					albumsdata=$(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json")
-					albumsdatalower=${albumsdata,,}
-					echo "$logheader :: Filtering out Titles not containing \"$first\""
-					if  [ "$lidarralbumtypelower" != "single" ]; then
-						DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type!=\"single\") | .id" | wc -l)
-						DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type!=\"single\") | .id"))	
-					else
-						DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type==\"single\") | .id" | wc -l)
-						DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type==\"single\") | .id"))	
-					fi
-
-					if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
-						echo "$logheader :: ERROR :: No albums found..."
-						albumdeezerurl=""
-						continue
-					fi
 
 					for id in "${!lidarralbumdrecordids[@]}"; do
 						recordtitle=${lidarralbumdrecordids[$id]}
 						albumtitle="$recordtitle"
+						first=${albumtitle%% *}
+						firstlower=${first,,}
+						albumsdata=$(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json")
+						albumsdatalower=${albumsdata,,}
+						DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | .id" | wc -l)
+						DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | .id"))	
+						if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
+							echo "$logheader :: ERROR :: No albums found..."
+							albumdeezerurl=""
+							continue
+						fi
+						echo "$logheader :: Filtering out Titles not containing \"$first\""
 						echo "$logheader :: Checking $DeezerArtistAlbumListSortTotal Albums for match ($albumtitle) with Max Distance Score of 2 or less"
 						for id in ${!DeezerArtistAlbumListAlbumID[@]}; do
 							currentprocess=$(( $id + 1 ))
@@ -492,6 +486,18 @@ WantedMode () {
 						for id in "${!lidarralbumdrecordids[@]}"; do
 							recordtitle=${lidarralbumdrecordids[$id]}
 							albumtitle="$recordtitle"
+							first=${albumtitle%% *}
+							firstlower=${first,,}
+							albumsdata=$(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json")
+							albumsdatalower=${albumsdata,,}
+							DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | .id" | wc -l)
+							DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | .id"))
+							if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
+								echo "$logheader :: ERROR :: No albums found..."
+								albumdeezerurl=""
+								continue
+							fi
+							echo "$logheader :: Filtering out Titles not containing \"$first\""
 							echo "$logheader :: Checking $DeezerArtistAlbumListSortTotal Albums for match ($albumtitle) with Max Distance Score of $MatchDistance or less"
 							for id in ${!DeezerArtistAlbumListAlbumID[@]}; do
 								currentprocess=$(( $id + 1 ))
