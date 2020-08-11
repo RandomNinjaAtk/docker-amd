@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.7"
+	echo "############################################ SCRIPT VERSION 1.3.8"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -107,16 +107,16 @@ Configuration () {
 		LIST="missing"
 	fi
 	
-	if [ -z "$SkipFuzzy" ]; then
-		SkipFuzzy="true"
-		echo "ERROR: SkipFuzzy not set, setting to default"
-	fi
-	
-	if [ "$SkipFuzzy" == "true" ]; then
-		echo "Audio: Skip Fuzzy Searching: ENABLED (does not apply to Varoius Artists)"
+	if [ "$SearchType" == "both" ]; then
+		echo "Audio: Match Type: Artist Searching & Backup Fuzzy Searching"
+	elif [ "$SearchType" == "artist" ]; then
+		echo "Audio: Match Type: Artist Searching Only (Exception: Fuzzy search only for Various Artists)"
+	elif [ "$SearchType" == "fuzzy" ]; then	
+		echo "Audio: Match Type: Fuzzy Searching Only"
 	else
-		echo "Audio: Skip Fuzzy Searching: DISABLE"
-	fi	
+		echo "Audio: Match Type: Artist Searching & Backup Fuzzy Searching"
+		SearchType="both"
+	fi
 
 	if [ ! -z "$Concurrency" ]; then
 		echo "Audio: Concurrency: $Concurrency"
@@ -427,7 +427,7 @@ WantedMode () {
 			fi
 		fi
 		
-		if [ "$albumartistname" != "Various Artists" ]; then
+		if [[ "$albumartistname" != "Various Artists" && "$SearchType" != "fuzzy" ]]; then
 			if [ ! -z "${albumartistlistlinkid}" ]; then	
 				for id in ${!albumartistlistlinkid[@]}; do
 					currentprocess=$(( $id + 1 ))
@@ -566,11 +566,11 @@ WantedMode () {
 			fi
 		fi
 		
-		if [[ "$SkipFuzzy" == "true" && "$albumartistname" != "Various Artists" ]]; then
+		if [[ "$SearchType" == "artist" && "$albumartistname" != "Various Artists" ]]; then
 			if [ -z "$albumdeezerurl" ]; then
 				echo "$logheader :: Skipping fuzzy search..."
 				error=1
-			fi		
+			fi			
 		elif [[ -z "$albumdeezerurl" && -z "$albumtidalurl" ]]; then
 			echo "$logheader :: ERROR :: Fallback to fuzzy search..."
 			echo "$logheader :: FUZZY SEARCHING..."
