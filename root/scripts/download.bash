@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.6"
+	echo "############################################ SCRIPT VERSION 1.3.7"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -585,6 +585,8 @@ WantedMode () {
 				deezersearchalbumid=""
 				deezeralbumtitle=""
 				explicit="false"
+				first=${albumtitle%% *}
+				firstlower=${first,,}
 				if [ "$albumartistname" != "Various Artists" ]; then
 					echo "$logheader :: Searching using $albumartistname + $albumtitle"
 					deezersearchurl="https://api.deezer.com/search?q=artist:%22${albumartistnamesearch}%22%20album:%22${albumtitlesearch}%22&limit=1000"
@@ -604,14 +606,19 @@ WantedMode () {
 						deezersearchurl="https://api.deezer.com/search?q=album:%22${albumtitlesearch}%22&limit=1000"
 						deezeralbumsearchdata=$(curl -s "${deezersearchurl}")
 						deezersearchcount="$(echo "$deezeralbumsearchdata" | jq -r ".total")"
-						searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[]")"
+						deezersearchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[]")"
+						deezersearchdatalower=${deezersearchdata,,}
+						searchdata=$(echo "$deezersearchdatalower" | jq -r "select(.album.title| contains (\"$firstlower\"))")
 					else
 						error=1
 						continue
 					fi
 				else
-					searchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[]")"
-				fi
+					deezersearchdata="$(echo "$deezeralbumsearchdata" | jq -r ".data | .[]")"
+					deezersearchdatalower=${deezersearchdata,,}
+					searchdata=$(echo "$deezersearchdatalower" | jq -r "select(.album.title| contains (\"$firstlower\"))")
+				fi	
+				echo "$logheader :: Filtering out Titles not containing \"$first\""
 				deezersearchcount="$(echo "$searchdata" | jq -r ".album.id" | sort -u | wc -l)"
 				echo "$logheader :: $deezersearchcount Albums Found"
 				if [ -z "$deezersearchalbumid" ]; then
