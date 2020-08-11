@@ -40,17 +40,17 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e PGID=1000` | for GroupID - see below for explanation |
 | `-v /config` | Configuration files for Lidarr. |
 | `-v /downloads-amd` | Path to your download folder location. (<strong>DO NOT DELETE, this is a required path</strong>) :: <strong>!!!IMPORTANT!!!</strong> Map this exact volume mount to your Lidarr Container for everything to work properly!!! |
-| `-e AUTOSTART="true"` | true = Enabled :: Runs script automatically on startup |
-| `-e LidarrUrl="http://127.0.0.1:8686"` | Set domain or IP to your Lidarr instance including port. If using reverse proxy, do not use a trailing slash. Ensure you specify http/s. |
-| `-e LidarrAPIkey="08d108d108d108d108d108d108d108d1"` | Lidarr API key. |
-| `-e MBRAINZMIRROR="https://musicbrainz.org"` | OPTIONAL :: Only change if using a different mirror |
+| `-e AUTOSTART=true` | true = Enabled :: Runs script automatically on startup |
+| `-e LidarrUrl=http://127.0.0.1:8686` | Set domain or IP to your Lidarr instance including port. If using reverse proxy, do not use a trailing slash. Ensure you specify http/s. |
+| `-e LidarrAPIkey=08d108d108d108d108d108d108d108d1` | Lidarr API key. |
+| `-e MBRAINZMIRROR=https://musicbrainz.org` | OPTIONAL :: Only change if using a different mirror |
 | `-e MBRATELIMIT=1` | OPTIONAL: musicbrainz rate limit, musicbrainz allows only 1 connection per second, max setting is 10 :: Set to 101 to disable limit |
-| `-e ARL_TOKEN="08d108d108d108d108d108d108d108d1"` | User token for dl client, for instructions to obtain token: https://notabug.org/RemixDevs/DeezloaderRemix/wiki/Login+via+userToken |
+| `-e ARL_TOKEN=08d108d108d108d108d108d108d108d1` | User token for dl client, for instructions to obtain token: https://notabug.org/RemixDevs/DeezloaderRemix/wiki/Login+via+userToken |
 | `-e LIST=both` | both or missing or cutoff :: both = missing + cutoff :: missng = lidarr missing list :: cutoff = lidarr cutoff list |
-| `-e SkipFuzzy=true` | true = enabled :: This will skip fuzzy searching for artists that have linked artist id for dl client (Various Artist is always fuzzy searched) |
+| `-e SearchType=both` | both or artist or fuzzy :: both = artist + fuzzy searching :: artist = only artist searching :: fuzzy = only fuzzy searching (Various Artist is always fuzzy searched, regardless of setting) |
 | `-e Concurrency=3` | Number of concurrent processes (downloads and caching threads) |
 | `-e quality=FLAC` | FLAC or 320 or 128 :: 320/128 are MP3 downloads, FLAC is lossless... |
-| `-e MatchDistance="10"` | Set as an integer, the higher the number, the more lienet it is. Example: A match score of 0 is a perfect match :: For more information, this score is produced using this function: [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance) |
+| `-e MatchDistance=10` | Set as an integer, the higher the number, the more lienet it is. Example: A match score of 0 is a perfect match :: For more information, this score is produced using this function: [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance) |
 | `-e FolderPermissions=766` | Based on chmod linux permissions |
 | `-e FilePermissions=666` | Based on chmod linux permissions |
 
