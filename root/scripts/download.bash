@@ -43,7 +43,7 @@ Configuration () {
 
 	# Verify Musicbrainz DB Connectivity
 	musicbrainzdbtest=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/artist/f59c5520-5f46-4d2c-b2c4-822eabf53419?fmt=json")
-	musicbrainzdbtestname=$(echo "${musicbrainzdbtest}"| jq -r '.name')
+	musicbrainzdbtestname=$(echo "${musicbrainzdbtest}"| jq -r '.name?')
 	if [ "$musicbrainzdbtestname" != "Linkin Park" ]; then
 		echo "ERROR: Cannot communicate with Musicbrainz"
 		echo "ERROR: Expected Response \"Linkin Park\", received response \"$musicbrainzdbtestname\""
