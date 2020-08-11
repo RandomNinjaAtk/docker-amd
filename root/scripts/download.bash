@@ -102,7 +102,7 @@ Configuration () {
 	elif [ "$LIST" == "cutoff" ]; then
 		echo "Audio: Wanted List Type: Cutoff"
 	else
-		echo "ERROR: LIST type not selected, using default..."
+		echo "WARNING: LIST type not selected, using default..."
 		echo "Audio: Wanted List Type: Missing"
 		LIST="missing"
 	fi
@@ -122,7 +122,7 @@ Configuration () {
 		echo "Audio: Concurrency: $Concurrency"
 		sed -i "s%\"queueConcurrency\": 3%\"queueConcurrency\": $Concurrency%g" "/xdg/deemix/config.json"
 	else
-		echo "ERROR: Concurrency setting invalid, defaulting to: 1"
+		echo "WARNING: Concurrency setting invalid, defaulting to: 1"
 		Concurrency="1"
 		sed -i "s%\"queueConcurrency\": 3%\"queueConcurrency\": $Concurrency%g" "/xdg/deemix/config.json"
 	fi
@@ -151,7 +151,7 @@ Configuration () {
 	if [ ! -z "$MatchDistance" ]; then
 		echo "Audio: Match Distance: $MatchDistance"
 	else
-		echo "ERROR: MatchDistance not set, using default..."
+		echo "WARNING: MatchDistance not set, using default..."
 		MatchDistance="10"
 		echo "Audio: Match Distance: $MatchDistance"
 	fi
@@ -159,7 +159,7 @@ Configuration () {
 	if [ ! -z "$FilePermissions" ]; then
 		echo "Audio: File Permissions: $FilePermissions"
 	else
-		echo "ERROR: FilePermissions not set, using default..."
+		echo "WARNING: FilePermissions not set, using default..."
 		FilePermissions="666"
 		echo "Audio: File Permissions: $FilePermissions"
 	fi
@@ -167,7 +167,7 @@ Configuration () {
 	if [ ! -z "$FolderPermissions" ]; then
 		echo "Audio: Folder Permissions: $FolderPermissions"
 	else
-		echo "ERROR: FolderPermissions not set, using default..."
+		echo "WARNING: FolderPermissions not set, using default..."
 		FolderPermissions="766"
 		echo "Audio: Folder Permissions: $FolderPermissions"
 	fi
