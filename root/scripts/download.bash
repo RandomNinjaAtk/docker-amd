@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.8"
+	echo "############################################ SCRIPT VERSION 1.3.9"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -108,13 +108,13 @@ Configuration () {
 	fi
 	
 	if [ "$SearchType" == "both" ]; then
-		echo "Audio: Match Type: Artist Searching & Backup Fuzzy Searching"
+		echo "Audio: Search Type: Artist Searching & Backup Fuzzy Searching"
 	elif [ "$SearchType" == "artist" ]; then
-		echo "Audio: Match Type: Artist Searching Only (Exception: Fuzzy search only for Various Artists)"
+		echo "Audio: Search Type: Artist Searching Only (Exception: Fuzzy search only for Various Artists)"
 	elif [ "$SearchType" == "fuzzy" ]; then	
-		echo "Audio: Match Type: Fuzzy Searching Only"
+		echo "Audio: Search Type: Fuzzy Searching Only"
 	else
-		echo "Audio: Match Type: Artist Searching & Backup Fuzzy Searching"
+		echo "Audio: Search Type: Artist Searching & Backup Fuzzy Searching"
 		SearchType="both"
 	fi
 
