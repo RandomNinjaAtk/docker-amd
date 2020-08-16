@@ -54,6 +54,62 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e LidarrAPIkey=08d108d108d108d108d108d108d108d1` | Lidarr API key. |
 | `-e ARL_TOKEN=08d108d108d108d108d108d108d108d1` | User token for dl client, for instructions to obtain token: https://notabug.org/RemixDevs/DeezloaderRemix/wiki/Login+via+userToken |
 
+## Usage
+
+Here are some example snippets to help you get started creating a container.
+
+### docker
+
+```
+docker create \
+  --name=radarr \
+  -v /config \
+  -v /downloads-amd \
+  -e PUID=1000 \
+  -e PGID=1000 \
+  -e AUTOSTART=true \
+  -e LIST=both \
+  -e SearchType=both \
+  -e Concurrency=1 \
+  -e quality=FLAC \
+  -e MatchDistance=10 \
+  -e FolderPermissions=766 \
+  -e FilePermissions=666 \
+  -e MBRAINZMIRROR=https://musicbrainz.org \
+  -e MBRATELIMIT=1 \
+  -e LidarrUrl=http://127.0.0.1:8686 \
+  -e LidarrAPIkey=08d108d108d108d108d108d108d108d1 \
+  -e ARL_TOKEN=08d108d108d108d108d108d108d108d1	\
+  --restart unless-stopped \
+  randomninjaatk/amd 
+```
+
+
+### docker-compose
+
+Compatible with docker-compose v2 schemas.
+
+```
+---
+version: "2.1"
+services:
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - UMASK_SET=022 #optional
+    volumes:
+      - /path/to/data:/config
+      - /path/to/movies:/movies
+      - /path/to/downloadclient-downloads:/downloads
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+```
+
 
 # Script Information
 * Script will automatically run when enabled, if disabled, you will need to manually execute with the following command:
