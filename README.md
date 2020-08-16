@@ -36,10 +36,10 @@ Container images are configured using parameters passed at runtime (such as thos
 
 | Parameter | Function |
 | --- | --- |
-| `-e PUID=1000` | for UserID - see below for explanation |
-| `-e PGID=1000` | for GroupID - see below for explanation |
 | `-v /config` | Configuration files for Lidarr. |
 | `-v /downloads-amd` | Path to your download folder location. (<strong>DO NOT DELETE, this is a required path</strong>) :: <strong>!!!IMPORTANT!!!</strong> Map this exact volume mount to your Lidarr Container for everything to work properly!!! |
+| `-e PUID=1000` | for UserID - see below for explanation |
+| `-e PGID=1000` | for GroupID - see below for explanation |
 | `-e AUTOSTART=true` | true = Enabled :: Runs script automatically on startup |
 | `-e MBRAINZMIRROR=https://musicbrainz.org` | OPTIONAL :: Only change if using a different mirror |
 | `-e MBRATELIMIT=1` | OPTIONAL: musicbrainz rate limit, musicbrainz allows only 1 connection per second, max setting is 10 :: Set to 101 to disable limit |
