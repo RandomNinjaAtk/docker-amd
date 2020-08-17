@@ -1,4 +1,8 @@
 # AMD - Automated Music Downloader 
+![Docker Build](https://img.shields.io/docker/cloud/automated/randomninjaatk/amd?style=flat-square)
+![Docker Pulls](https://img.shields.io/docker/pulls/randomninjaatk/amd?style=flat-square)
+![Docker Stars](https://img.shields.io/docker/stars/randomninjaatk/amd?style=flat-square)
+[![Docker Hub](https://img.shields.io/badge/Open%20On-DockerHub-blue)](https://hub.docker.com/r/randomninjaatk/amd)
 
 [RandomNinjaAtk/amd](https://github.com/RandomNinjaAtk/docker-amd) is a Lidarr companion script to automatically download music for Lidarr 
 
