@@ -51,8 +51,8 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e MBRAINZMIRROR=https://musicbrainz.org` | OPTIONAL :: Only change if using a different mirror |
 | `-e MBRATELIMIT=1` | OPTIONAL: musicbrainz rate limit, musicbrainz allows only 1 connection per second, max setting is 10 :: Set to 101 to disable limit |
 | `-e LidarrUrl=http://127.0.0.1:8686` | Set domain or IP to your Lidarr instance including port. If using reverse proxy, do not use a trailing slash. Ensure you specify http/s. |
-| `-e LidarrAPIkey=` | Lidarr API key. |
-| `-e ARL_TOKEN=` | User token for dl client, for instructions to obtain token: https://notabug.org/RemixDevs/DeezloaderRemix/wiki/Login+via+userToken |
+| `-e LidarrAPIkey=LIDARRAPI` | Lidarr API key. |
+| `-e ARL_TOKEN=ARLTOKEN` | User token for dl client, for instructions to obtain token: https://notabug.org/RemixDevs/DeezloaderRemix/wiki/Login+via+userToken |
 
 ## Usage
 
@@ -78,8 +78,8 @@ docker create \
   -e MBRAINZMIRROR=https://musicbrainz.org \
   -e MBRATELIMIT=1 \
   -e LidarrUrl=http://127.0.0.1:8686 \
-  -e LidarrAPIkey= \
-  -e ARL_TOKEN=	\
+  -e LidarrAPIkey=LIDARRAPI \
+  -e ARL_TOKEN=ARLTOKEN	\
   --restart unless-stopped \
   randomninjaatk/amd 
 ```
@@ -113,8 +113,8 @@ services:
       - MBRAINZMIRROR=https://musicbrainz.org
       - MBRATELIMIT=1
       - LidarrUrl=http://127.0.0.1:8686
-      - LidarrAPIkey=
-      - ARL_TOKEN=
+      - LidarrAPIkey=LIDARRAPI
+      - ARL_TOKEN=ARLTOKEN
     restart: unless-stopped
 ```
 
