@@ -75,8 +75,8 @@ docker create \
   -e MatchDistance=10 \
   -e FolderPermissions=766 \
   -e FilePermissions=666 \
-#  -e MBRAINZMIRROR=https://musicbrainz.org \
-#  -e MBRATELIMIT=1 \
+  -e MBRAINZMIRROR=https://musicbrainz.org \
+  -e MBRATELIMIT=1 \
   -e LidarrUrl=http://127.0.0.1:8686 \
   -e LidarrAPIkey=08d108d108d108d108d108d108d108d1 \
   -e ARL_TOKEN=08d108d108d108d108d108d108d108d1	\
@@ -110,8 +110,8 @@ services:
       - MatchDistance=10
       - FolderPermissions=766
       - FilePermissions=666
-#      - MBRAINZMIRROR=https://musicbrainz.org
-#      - MBRATELIMIT=1
+      - MBRAINZMIRROR=https://musicbrainz.org
+      - MBRATELIMIT=1
       - LidarrUrl=http://127.0.0.1:8686
       - LidarrAPIkey=08d108d108d108d108d108d108d108d1
       - ARL_TOKEN=08d108d108d108d108d108d108d108d1
