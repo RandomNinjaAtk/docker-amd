@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.9"
+	echo "############################################ SCRIPT VERSION 1.3.10"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -418,7 +418,10 @@ WantedMode () {
 			albumdeezerurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"deezer\")).resource" | head -n 1)"
 			# albumtidalurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"tidal\")).resource" | head -n 1)"
 		fi
+		
 		if [ ! -z "$albumdeezerurl" ]; then
+			DeezerAlbumID="$(echo "$albumdeezerurl" | grep -o '[[:digit:]]*')"
+			albumdeezerurl="https://api.deezer.com/album/$DeezerAlbumID"
 			deezeralbumsearchdata=$(curl -s "${albumdeezerurl}")
 			errocheck="$(echo "$deezeralbumsearchdata" | jq -r ".error.code")"
 			if [ "$errocheck" != "null" ]; then
