@@ -63,8 +63,8 @@ Here are some example snippets to help you get started creating a container.
 ```
 docker create \
   --name=radarr \
-  -v /config \
-  -v /downloads-amd \
+  -v /path/to/config/files:/config \
+  -v /path/to/downloads:/downloads-amd \
   -e PUID=1000 \
   -e PGID=1000 \
   -e AUTOSTART=true \
@@ -93,20 +93,28 @@ Compatible with docker-compose v2 schemas.
 ---
 version: "2.1"
 services:
-  radarr:
-    image: linuxserver/radarr
-    container_name: radarr
+  amd:
+    image: randomninjaatk/amd 
+    container_name: amd
+    volumes:
+      - /path/to/config/files:/config
+      - /path/to/downloads:/downloads-amd
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Europe/London
-      - UMASK_SET=022 #optional
-    volumes:
-      - /path/to/data:/config
-      - /path/to/movies:/movies
-      - /path/to/downloadclient-downloads:/downloads
-    ports:
-      - 7878:7878
+      - AUTOSTART=true
+      - LIST=both
+      - SearchType=both
+      - Concurrency=1
+      - quality=FLAC
+      - MatchDistance=10
+      - FolderPermissions=766
+      - FilePermissions=666
+      - MBRAINZMIRROR=https://musicbrainz.org
+      - MBRATELIMIT=1
+      - LidarrUrl=http://127.0.0.1:8686
+      - LidarrAPIkey=08d108d108d108d108d108d108d108d1
+      - ARL_TOKEN=08d108d108d108d108d108d108d108d1
     restart: unless-stopped
 ```
 
