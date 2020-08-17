@@ -62,7 +62,7 @@ Here are some example snippets to help you get started creating a container.
 
 ```
 docker create \
-  --name=radarr \
+  --name=amd \
   -v /path/to/config/files:/config \
   -v /path/to/downloads:/downloads-amd \
   -e PUID=1000 \
