@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.13"
+	echo "############################################ SCRIPT VERSION 1.3.14"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -141,6 +141,17 @@ Configuration () {
 		echo "Audio: Download Bitrate: lossless"
 		quality="FLAC"
 	fi
+	
+	if [ ! -z "$requirequality" ]; then
+		if [ "$requirequality" == "true" ]; then 
+			echo "Audio: Require Quality: ENABLED"
+		else
+			echo "Audio: Require Quality: DISABLED"
+		fi
+	else
+		echo "WARNING: requirequality setting invalid, defaulting to: false"
+		requirequality="false"
+	fi
 
 	if [ ! -z "$MatchDistance" ]; then
 		echo "Audio: Match Distance: $MatchDistance"
@@ -173,6 +184,27 @@ Configuration () {
 	fi
 	amount=1000000000
 	sleep 2.5
+}
+
+DownloadQualityCheck () {
+
+	if [ "$requirequality" == "true" ]; then
+		echo "$logheader :: DOWNLOAD :: Checking for unwanted files"
+		if [ "$quality" == "FLAC" ]; then
+			if find "$DOWNLOADS"/amd/dlclient -iname "*.mp3" | read; then
+				echo "$logheader :: DOWNLOAD :: Unwanted files found!"
+				echo "$logheader :: DOWNLOAD :: Performing cleanup..."
+				rm "$DOWNLOADS"/amd/dlclient/*
+			fi
+		else
+			if find "$DOWNLOADS"/amd/dlclient -iname "*.flac" | read; then
+				echo "$logheader :: DOWNLOAD :: Unwanted files found!"
+				echo "$logheader :: DOWNLOAD :: Performing cleanup..."
+				rm "$DOWNLOADS"/amd/dlclient/*
+			fi
+		fi
+	fi
+
 }
 
 CacheEngine () {
@@ -801,13 +833,16 @@ WantedMode () {
 			if cd "${PathToDLClient}" && python3 -m deemix -b $quality "$albumdeezerurl" && cd "${currentpwd}"; then
 				sleep 0.5
 				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+					DownloadQualityCheck
+				fi
+				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
 					chmod $FilePermissions "$DOWNLOADS"/amd/dlclient/*
 					chown -R abc:abc "$DOWNLOADS"/amd/dlclient
 					echo "$logheader :: DOWNLOAD :: success"
-					echo "$albumartistname :: $albumreleasegroupmbzid :: $albumtitle"  >> "/config/logs/notfound.log"
 					echo "$filelogheader :: $albumdeezerurl :: $albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder"  >> "/config/logs/download.log"
 				else
 					echo "$logheader :: DOWNLOAD :: ERROR :: No files found"
+					echo "$albumartistname :: $albumreleasegroupmbzid :: $albumtitle"  >> "/config/logs/notfound.log"
 					echo "$filelogheader :: $albumdeezerurl :: $albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder"  >> "/config/logs/error.log"
 					continue
 				fi
