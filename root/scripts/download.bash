@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.10"
+	echo "############################################ SCRIPT VERSION 1.3.11"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -140,12 +140,6 @@ Configuration () {
 		echo "Audio: Download Quality: FLAC"
 		echo "Audio: Download Bitrate: lossless"
 		quality="FLAC"
-	fi
-
-	if [ "$ExplicitPreferred" == "true" ]; then
-		echo "Audio: Explicit Preferred: ENABLED"
-	else
-		echo "Audio: Explicit Preferred: DISABLED"
 	fi
 
 	if [ ! -z "$MatchDistance" ]; then
