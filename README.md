@@ -49,6 +49,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e SearchType=both` | both or artist or fuzzy :: both = artist + fuzzy searching :: artist = only artist searching :: fuzzy = only fuzzy searching (Various Artist is always fuzzy searched, regardless of setting) |
 | `-e Concurrency=1` | Number of concurrent processes (downloads and caching threads) |
 | `-e quality=FLAC` | FLAC or 320 or 128 :: 320/128 are MP3 downloads, FLAC is lossless... |
+| `-e requirequality=false` | true = enabled :: Requires all downloaded files match target file extension (mp3 or flac) when enabled |
 | `-e MatchDistance=10` | Set as an integer, the higher the number, the more lienet it is. Example: A match score of 0 is a perfect match :: For more information, this score is produced using this function: [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance) |
 | `-e FolderPermissions=766` | Based on chmod linux permissions |
 | `-e FilePermissions=666` | Based on chmod linux permissions |
@@ -76,6 +77,7 @@ docker create \
   -e SearchType=both \
   -e Concurrency=1 \
   -e quality=FLAC \
+  -e requirequality=false \
   -e MatchDistance=10 \
   -e FolderPermissions=766 \
   -e FilePermissions=666 \
@@ -111,6 +113,7 @@ services:
       - SearchType=both
       - Concurrency=1
       - quality=FLAC
+      - requirequality=false
       - MatchDistance=10
       - FolderPermissions=766
       - FilePermissions=666
