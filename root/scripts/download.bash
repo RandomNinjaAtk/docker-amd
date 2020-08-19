@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.11"
+	echo "############################################ SCRIPT VERSION 1.3.12"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -365,7 +365,23 @@ WantedMode () {
 		albumartistname=$(echo "${lidarralbumdata}"| jq -r '.[].artist.artistName')
 		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
 		filelogheader="$albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"		
-		if [ -f "/config/logs/notfound.log" ]; then
+		
+		if [ "$albumartistname" != "Various Artists" ]; then
+			albuartistreleasedata=$(find "/config/cache" -type f -iname "*-$albumartistmbzid-releases.json" -exec cat {} \;)
+			albumdeezerurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"deezer\")).resource" | head -n 1)"
+			# albumtidalurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"tidal\")).resource" | head -n 1)"
+		fi
+		
+		if [ ! -z "$albumdeezerurl" ]; then
+			DeezerAlbumID="$(echo "$albumdeezerurl" | grep -o '[[:digit:]]*')"
+			albumdeezerurl="https://api.deezer.com/album/$DeezerAlbumID"
+			deezeralbumsearchdata=$(curl -s "${albumdeezerurl}")
+			errocheck="$(echo "$deezeralbumsearchdata" | jq -r ".error.code")"
+			if [ "$errocheck" != "null" ]; then
+				echo "$logheader :: ERROR :: Provided URL is broken, fallback to artist search..."
+				albumdeezerurl=""
+			fi
+		elif [ -f "/config/logs/notfound.log" ]; then
 			if cat "/config/logs/notfound.log" | grep -i ":: $albumreleasegroupmbzid ::" | read; then
 				echo "$logheader :: PREVOUSLY NOT FOUND SKIPPING..."
 				continue
@@ -375,6 +391,7 @@ WantedMode () {
 		else
 			echo "$logheader :: SEARCHING..."
 		fi
+		
 		sanatizedartistname="$(echo "${albumartistname}" | sed -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g' -e 's/^\(nul\|prn\|con\|lpt[0-9]\|com[0-9]\|aux\)\(\.\|$\)//i' -e 's/^\.*$//' -e 's/^$/NONAME/')"
 		albumartistlistlinkid=($(echo "${lidarralbumdata}"| jq -r '.[].artist | .links | .[] | select(.name=="deezer") | .url' | sort -u | grep -o '[[:digit:]]*'))
 		if [ "$albumartistname" == "Korn" ]; then # Fix for online source naming convention...
@@ -405,24 +422,7 @@ WantedMode () {
 				echo "$logheader :: Already Downloaded"
 				continue
 			fi
-		fi
-
-		if [ "$albumartistname" != "Various Artists" ]; then
-			albuartistreleasedata=$(find "/config/cache" -type f -iname "*-$albumartistmbzid-releases.json" -exec cat {} \;)
-			albumdeezerurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"deezer\")).resource" | head -n 1)"
-			# albumtidalurl="$(echo "$albuartistreleasedata" | jq -r " .[].releases | .[] | select(.\"release-group\".id==\"$albumreleasegroupmbzid\") | .relations | .[].url | select(.resource | contains(\"tidal\")).resource" | head -n 1)"
-		fi
-		
-		if [ ! -z "$albumdeezerurl" ]; then
-			DeezerAlbumID="$(echo "$albumdeezerurl" | grep -o '[[:digit:]]*')"
-			albumdeezerurl="https://api.deezer.com/album/$DeezerAlbumID"
-			deezeralbumsearchdata=$(curl -s "${albumdeezerurl}")
-			errocheck="$(echo "$deezeralbumsearchdata" | jq -r ".error.code")"
-			if [ "$errocheck" != "null" ]; then
-				echo "$logheader :: ERROR :: Provided URL is broken, fallback to artist search..."
-				albumdeezerurl=""
-			fi
-		fi
+		fi		
 		
 		if [[ "$albumartistname" != "Various Artists" && "$SearchType" != "fuzzy" ]]; then
 			if [ ! -z "${albumartistlistlinkid}" ]; then	
