@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.12"
+	echo "############################################ SCRIPT VERSION 1.3.13"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -380,16 +380,23 @@ WantedMode () {
 			if [ "$errocheck" != "null" ]; then
 				echo "$logheader :: ERROR :: Provided URL is broken, fallback to artist search..."
 				albumdeezerurl=""
+				error=1
 			fi
-		elif [ -f "/config/logs/notfound.log" ]; then
+		else
+			error=1
+		fi
+		
+		if [[ -f "/config/logs/notfound.log" && $error == 1 ]]; then
 			if cat "/config/logs/notfound.log" | grep -i ":: $albumreleasegroupmbzid ::" | read; then
 				echo "$logheader :: PREVOUSLY NOT FOUND SKIPPING..."
 				continue
 			else
 				echo "$logheader :: SEARCHING..."
+				error=0
 			fi
 		else
 			echo "$logheader :: SEARCHING..."
+			error=0
 		fi
 		
 		sanatizedartistname="$(echo "${albumartistname}" | sed -e 's/[\\/:\*\?"<>\|\x01-\x1F\x7F]//g' -e 's/^\(nul\|prn\|con\|lpt[0-9]\|com[0-9]\|aux\)\(\.\|$\)//i' -e 's/^\.*$//' -e 's/^$/NONAME/')"
