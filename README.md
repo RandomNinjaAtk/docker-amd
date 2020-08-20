@@ -51,6 +51,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e quality=FLAC` | FLAC or 320 or 128 :: 320/128 are MP3 downloads, FLAC is lossless... |
 | `-e requirequality=false` | true = enabled :: Requires all downloaded files match target file extension (mp3 or flac) when enabled |
 | `-e MatchDistance=10` | Set as an integer, the higher the number, the more lienet it is. Example: A match score of 0 is a perfect match :: For more information, this score is produced using this function: [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance) |
+| `-e replaygain=true` | true = enabled :: Scans and analyzes files to add replaygain tags to song metadata |
 | `-e FolderPermissions=766` | Based on chmod linux permissions |
 | `-e FilePermissions=666` | Based on chmod linux permissions |
 | `-e MBRAINZMIRROR=https://musicbrainz.org` | OPTIONAL :: Only change if using a different mirror |
@@ -79,6 +80,7 @@ docker create \
   -e quality=FLAC \
   -e requirequality=false \
   -e MatchDistance=10 \
+  -e replaygain=true \
   -e FolderPermissions=766 \
   -e FilePermissions=666 \
   -e MBRAINZMIRROR=https://musicbrainz.org \
@@ -115,6 +117,7 @@ services:
       - quality=FLAC
       - requirequality=false
       - MatchDistance=10
+      - replaygain=true
       - FolderPermissions=766
       - FilePermissions=666
       - MBRAINZMIRROR=https://musicbrainz.org
@@ -172,5 +175,6 @@ services:
 - [Deemix download client](https://deemix.app/)
 - [Musicbrainz](https://musicbrainz.org/)
 - [Lidarr](https://lidarr.audio/)
+- [r128gain](https://github.com/desbma/r128gain)
 - [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance)
 - Icons made by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
