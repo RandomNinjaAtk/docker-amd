@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.15"
+	echo "############################################ SCRIPT VERSION 1.3.18"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -70,11 +70,9 @@ Configuration () {
 		DOWNLOADS="/downloads-amd"
 		echo "Downloads Location: $DOWNLOADS/amd/dlclient"
 		echo "Import Location: $DOWNLOADS/amd/import"
-		sed -i "s%/downloadfolder%/downloads-amd/amd/dlclient%g" "/xdg/deemix/config.json"
 	else
 		if [ -d "$DOWNLOADS" ]; then
 			echo "DOWNLOADS Location: $DOWNLOADS"
-			sed -i "s%/downloadfolder%$DOWNLOADS/amd/dlclient%g" "/xdg/deemix/config.json"
 		else
 			echo "ERROR: DOWNLOADS setting invalid, currently set to: $DOWNLOADS"
 			echo "ERROR: DOWNLOADS Expected Valid Setting: /your/path/to/music/downloads"
@@ -120,11 +118,10 @@ Configuration () {
 
 	if [ ! -z "$Concurrency" ]; then
 		echo "Audio: Concurrency: $Concurrency"
-		sed -i "s%\"queueConcurrency\": 3%\"queueConcurrency\": $Concurrency%g" "/xdg/deemix/config.json"
+		sed -i "s%queueConcurrency\"] = 1%queueConcurrency\"] = $Concurrency%g" "/config/scripts/dlclient.py"
 	else
 		echo "WARNING: Concurrency setting invalid, defaulting to: 1"
 		Concurrency="1"
-		sed -i "s%\"queueConcurrency\": 3%\"queueConcurrency\": $Concurrency%g" "/xdg/deemix/config.json"
 	fi
 
 	if [ "$quality" == "FLAC" ]; then
@@ -221,7 +218,7 @@ DownloadQualityCheck () {
 AddReplaygainTags () {
 	if [ "$replaygain" == "true" ]; then
 		echo "$logheader :: DOWNLOAD :: Adding Replaygain Tags using r128gain"
-		r128gain -r -a "$DOWNLOADS"
+		r128gain -r -a "$DOWNLOADS/amd/dlclient"
 	fi
 }
 
@@ -845,10 +842,8 @@ WantedMode () {
 		fi
 
 		if [ ! -d "$albumbimportfolder" ]; then
-			chmod 0777 -R "${PathToDLClient}"
-			currentpwd="$(pwd)"
 			echo "$logheader :: DOWNLOADING :: $deezeralbumtitle :: $albumdeezerurl..."
-			if cd "${PathToDLClient}" && python3 -m deemix -b $quality "$albumdeezerurl" && cd "${currentpwd}"; then
+			if python3 /config/scripts/dlclient.py -b $quality "$albumdeezerurl"; then
 				sleep 0.5
 				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
 					DownloadQualityCheck
