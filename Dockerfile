@@ -41,17 +41,11 @@ RUN \
 		pylast \
 		mutagen \
 		r128gain \
+		deemix \
 		pyacoustid && \
-	echo "************ download dl client ************" && \
+	echo "************ setup dl client config directory ************" && \
 	echo "************ make directory ************" && \
-	mkdir -p ${PathToDLClient} && \
-	mkdir -p "${XDG_CONFIG_HOME}/deemix" && \
-	echo "************ download dl client repo ************" && \
-	git clone https://codeberg.org/RemixDev/deemix.git ${PathToDLClient} && \
-	echo "************ install pip dependencies ************" && \
-	pip3 install -r /root/scripts/deemix/requirements.txt --user && \
-	echo "************ customize dlclient ************" && \
-	chmod 0777 -R "/xdg/deemix"
+	mkdir -p "${XDG_CONFIG_HOME}/deemix"
 	
 WORKDIR /
 
