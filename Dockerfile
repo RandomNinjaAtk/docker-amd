@@ -2,7 +2,7 @@ FROM lsiobase/ubuntu:focal
 LABEL maintainer="RandomNinjaAtk"
 
 ENV TITLE="Automated Music Downloader"
-ENV VERSION="1.0.0"
+ENV VERSION="1.0.1"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/xdg"
 ENV PathToDLClient="/root/scripts/deemix"
@@ -40,6 +40,7 @@ RUN \
 		Pillow \
 		pylast \
 		mutagen \
+		r128gain \
 		pyacoustid && \
 	echo "************ download dl client ************" && \
 	echo "************ make directory ************" && \
