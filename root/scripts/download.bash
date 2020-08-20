@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.15"
+	echo "############################################ SCRIPT VERSION 1.3.16"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -845,10 +845,8 @@ WantedMode () {
 		fi
 
 		if [ ! -d "$albumbimportfolder" ]; then
-			chmod 0777 -R "${PathToDLClient}"
-			currentpwd="$(pwd)"
 			echo "$logheader :: DOWNLOADING :: $deezeralbumtitle :: $albumdeezerurl..."
-			if cd "${PathToDLClient}" && python3 -m deemix -b $quality "$albumdeezerurl" && cd "${currentpwd}"; then
+			if python3 /config/scripts/dlclient.py -b $quality "$albumdeezerurl"; then
 				sleep 0.5
 				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
 					DownloadQualityCheck
