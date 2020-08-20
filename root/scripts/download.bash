@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.14"
+	echo "############################################ SCRIPT VERSION 1.3.15"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -160,6 +160,17 @@ Configuration () {
 		MatchDistance="10"
 		echo "Audio: Match Distance: $MatchDistance"
 	fi
+	
+	if [ ! -z "$replaygain" ]; then
+		if [ "$replaygain" == "true" ]; then 
+			echo "Audio: Replaygain Tagging: ENABLED"
+		else
+			echo "Audio: Replaygain Tagging: DISABLED"
+		fi
+	else
+		echo "WARNING: replaygain setting invalid, defaulting to: true"
+		replaygain="true"
+	fi
 
 	if [ ! -z "$FilePermissions" ]; then
 		echo "Audio: File Permissions: $FilePermissions"
@@ -205,6 +216,13 @@ DownloadQualityCheck () {
 		fi
 	fi
 
+}
+
+AddReplaygainTags () {
+	if [ "$replaygain" == "true" ]; then
+		echo "$logheader :: DOWNLOAD :: Adding Replaygain Tags using r128gain"
+		r128gain -r -a "$DOWNLOADS"
+	fi
 }
 
 CacheEngine () {
@@ -862,6 +880,7 @@ WantedMode () {
 		fi
 
 		TagFix
+		AddReplaygainTags
 
 		if [ ! -d "$DOWNLOADS/amd/import" ]; then
 			mkdir -p "$DOWNLOADS/amd/import"
