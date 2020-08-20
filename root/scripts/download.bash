@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.17"
+	echo "############################################ SCRIPT VERSION 1.3.18"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -118,7 +118,7 @@ Configuration () {
 
 	if [ ! -z "$Concurrency" ]; then
 		echo "Audio: Concurrency: $Concurrency"
-		sed -i "s%self.set.settings[\"queueConcurrency\"] = 1%self.set.settings[\"queueConcurrency\"] = $Concurrency%g" "/xdg/deemix/config.json"
+		sed -i "s%queueConcurrency\"] = 1%queueConcurrency\"] = $Concurrency%g" "/config/scripts/dlclient.py"
 	else
 		echo "WARNING: Concurrency setting invalid, defaulting to: 1"
 		Concurrency="1"
@@ -218,7 +218,7 @@ DownloadQualityCheck () {
 AddReplaygainTags () {
 	if [ "$replaygain" == "true" ]; then
 		echo "$logheader :: DOWNLOAD :: Adding Replaygain Tags using r128gain"
-		r128gain -r -a "$DOWNLOADS"
+		r128gain -r -a "$DOWNLOADS/amd/dlclient"
 	fi
 }
 
