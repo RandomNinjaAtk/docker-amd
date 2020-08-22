@@ -2,7 +2,7 @@ FROM lsiobase/ubuntu:focal
 LABEL maintainer="RandomNinjaAtk"
 
 ENV TITLE="Automated Music Downloader"
-ENV VERSION="1.0.1"
+ENV VERSION="1.0.2"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/xdg"
 ENV PathToDLClient="/root/scripts/deemix"
@@ -35,7 +35,7 @@ RUN \
 		/var/lib/apt/lists/* \
 		/var/tmp/* && \
 	echo "************ install beets plugin dependencies ************" && \
-	pip3 install --no-cache-dir -U \
+	python3 -m pip install --no-cache-dir -U \
 		requests \
 		Pillow \
 		pylast \
