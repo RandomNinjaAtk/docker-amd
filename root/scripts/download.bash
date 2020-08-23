@@ -1,5 +1,5 @@
 #!/usr/bin/with-contenv bash
-export XDG_CONFIG_HOME="/xdg"
+export XDG_CONFIG_HOME="/config/deemix/xdg"
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 agent="automated-music-downloader ( https://github.com/RandomNinjaAtk/docker-amd )"
@@ -13,7 +13,7 @@ Configuration () {
 	echo ""
 	echo ""
 	sleep 2.5
-	echo "############################################ SCRIPT VERSION 1.3.18"
+	echo "############################################ SCRIPT VERSION 1.3.19"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
