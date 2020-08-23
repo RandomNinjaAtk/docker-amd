@@ -2,9 +2,9 @@ FROM lsiobase/ubuntu:focal
 LABEL maintainer="RandomNinjaAtk"
 
 ENV TITLE="Automated Music Downloader"
-ENV VERSION="1.0.2"
+ENV VERSION="1.0.3"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
-ENV XDG_CONFIG_HOME="/xdg"
+ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV PathToDLClient="/root/scripts/deemix"
 
 RUN \
