@@ -2,7 +2,7 @@ FROM lsiobase/ubuntu:focal
 LABEL maintainer="RandomNinjaAtk"
 
 ENV TITLE="Automated Music Downloader"
-ENV VERSION="1.0.3"
+ENV VERSION="1.0.4"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV PathToDLClient="/root/scripts/deemix"
@@ -11,6 +11,7 @@ RUN \
 	echo "************ install dependencies ************" && \
 	echo "************ install packages ************" && \
 	apt-get update -y && \
+	apt-get upgrade -y && \
 	apt-get install -y --no-install-recommends \
 		wget \
 		nano \
@@ -21,28 +22,19 @@ RUN \
 		flac \
 		opus-tools \
 		eyed3 \
-		beets \
 		python3 \
 		ffmpeg \
 		python3-pip \
-		libchromaprint-tools \
-		imagemagick \
-		python3-pythonmagick \
-		kid3-cli \
-		cron && \
+		libchromaprint-tools && \
 	rm -rf \
 		/tmp/* \
 		/var/lib/apt/lists/* \
 		/var/tmp/* && \
-	echo "************ install beets plugin dependencies ************" && \
+	echo "************ install python packages ************" && \
 	python3 -m pip install --no-cache-dir -U \
-		requests \
-		Pillow \
-		pylast \
 		mutagen \
 		r128gain \
-		deemix \
-		pyacoustid && \
+		deemix && \
 	echo "************ setup dl client config directory ************" && \
 	echo "************ make directory ************" && \
 	mkdir -p "${XDG_CONFIG_HOME}/deemix"
