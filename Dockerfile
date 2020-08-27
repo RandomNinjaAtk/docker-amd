@@ -2,7 +2,7 @@ FROM lsiobase/ubuntu:focal
 LABEL maintainer="RandomNinjaAtk"
 
 ENV TITLE="Automated Music Downloader"
-ENV VERSION="1.0.5"
+ENV VERSION="1.0.6"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 
@@ -12,17 +12,13 @@ RUN \
 	apt-get update -y && \
 	apt-get upgrade -y && \
 	apt-get install -y --no-install-recommends \
-		wget \
-		nano \
-		unzip \
-		git \
 		jq \
 		mp3val \
 		flac \
 		opus-tools \
 		eyed3 \
-		python3 \
 		ffmpeg \
+		python3 \
 		python3-pip \
 		libchromaprint-tools && \
 	rm -rf \
