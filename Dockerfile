@@ -2,10 +2,9 @@ FROM lsiobase/ubuntu:focal
 LABEL maintainer="RandomNinjaAtk"
 
 ENV TITLE="Automated Music Downloader"
-ENV VERSION="1.0.4"
+ENV VERSION="1.0.5"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
-ENV PathToDLClient="/root/scripts/deemix"
 
 RUN \
 	echo "************ install dependencies ************" && \
@@ -45,4 +44,4 @@ WORKDIR /
 COPY root/ /
 
 # ports and volumes
-VOLUME /config
+VOLUME /config /downloads-amd
