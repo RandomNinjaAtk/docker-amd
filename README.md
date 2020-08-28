@@ -60,6 +60,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e LidarrUrl=http://127.0.0.1:8686` | Set domain or IP to your Lidarr instance including port. If using reverse proxy, do not use a trailing slash. Ensure you specify http/s. |
 | `-e LidarrAPIkey=LIDARRAPI` | Lidarr API key. |
 | `-e ARL_TOKEN=ARLTOKEN` | User token for dl client, for instructions to obtain token: https://notabug.org/RemixDevs/DeezloaderRemix/wiki/Login+via+userToken |
+| `-e LIDARRREMOTEPATH="/path/to/downloads-amd` | OPTIONAL :: ADVANCED FEATURE :: Configure this to the local volume path for Lidarr to see the downloads folder, this will enable file moves, instead of copies... Less resource intensive |
 
 ## Usage
 
