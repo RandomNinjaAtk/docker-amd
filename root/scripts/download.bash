@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.4.0"
+	echo "############################################ SCRIPT VERSION 1.4.1"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -40,6 +40,13 @@ Configuration () {
 		echo "ERROR: URL: $LidarrUrl"
 		echo "ERROR: API Key: $LidarrAPIkey"
 		error=1
+	fi
+	
+	if [ ! -z "$LIDARRREMOTEPATH" ]; then
+		echo "Lidarr Remote Path Mapping: ENABLED ($LIDARRREMOTEPATH)"		
+		remotepath="true"
+	else
+		remotepath="false"
 	fi
 
 	# Verify Musicbrainz DB Connectivity
@@ -748,10 +755,10 @@ WantedMode () {
 		if [ "$explicit" == "true" ]; then
 			echo "$logheader :: Explicit Release Found"
 		fi
-
+	
 		albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
 		albumbimportfoldername="$(basename "$albumbimportfolder")"
-
+		
 		if [ -f "/config/logs/download.log" ]; then
 			if cat "/config/logs/download.log" | grep -i "$albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder" | read; then
 				echo "$logheader :: Already Downloaded"
@@ -811,6 +818,10 @@ WantedMode () {
 			chmod $FolderPermissions "$albumbimportfolder"
 			chmod $FilePermissions "$albumbimportfolder"/*
 			chown -R abc:abc "$albumbimportfolder"
+		fi
+		if [ "$remotepath" == "true" ]; then
+			albumbimportfolder="$LIDARRREMOTEPATH/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
+			albumbimportfoldername="$(basename "$albumbimportfolder")"
 		fi
 		LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${albumbimportfolder}\"}")
 		echo "$logheader :: LIDARR IMPORT NOTIFICATION SENT! :: $albumbimportfoldername"
@@ -922,6 +933,7 @@ Configuration
 CreateDownloadFolders
 SetFolderPermissions
 CleanupFailedImports
+#CacheEngine
 WantedMode
 
 exit 0
