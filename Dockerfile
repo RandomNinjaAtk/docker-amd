@@ -2,7 +2,7 @@ FROM lsiobase/ubuntu:focal
 LABEL maintainer="RandomNinjaAtk"
 
 ENV TITLE="Automated Music Downloader"
-ENV VERSION="1.0.7"
+ENV VERSION="1.0.8"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 
@@ -33,10 +33,11 @@ RUN \
 	echo "************ make directory ************" && \
 	mkdir -p "${XDG_CONFIG_HOME}/deemix"
 	
-WORKDIR /
-
 # copy local files
 COPY root/ /
 
+# set work directory
+WORKDIR /config
+
 # ports and volumes
-VOLUME /config /downloads-amd
+VOLUME /config
