@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.4.1"
+	echo "############################################ SCRIPT VERSION 1.4.2"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -391,6 +391,10 @@ WantedMode () {
 
 		if [ -d "$albumbimportfolder" ]; then
 			echo "$logheader :: Already Downloaded, skipping..."
+			if [ "$remotepath" == "true" ]; then
+				albumbimportfolder="$LIDARRREMOTEPATH/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
+				albumbimportfoldername="$(basename "$albumbimportfolder")"
+			fi
 			LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${albumbimportfolder}\"}")
 			echo "$logheader :: LIDARR IMPORT NOTIFICATION SENT! :: $albumbimportfoldername"
 			continue
