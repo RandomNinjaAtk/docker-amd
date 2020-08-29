@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.4.2"
+	echo "############################################ SCRIPT VERSION 1.4.3"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -408,7 +408,7 @@ WantedMode () {
 		fi
 
 		if [ -z "$albumdeezerurl" ]; then
-
+			
 			if [[ "$albumartistname" != "Various Artists" && "$SearchType" != "fuzzy" ]]; then
 				if [ ! -z "${albumartistlistlinkid}" ]; then
 					for id in ${!albumartistlistlinkid[@]}; do
@@ -426,6 +426,7 @@ WantedMode () {
 							firstlower=${first,,}
 							albumsdata=$(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json")
 							albumsdatalower=${albumsdata,,}
+							echo "$logheader :: Filtering out Titles not containing \"$first\""
 							if  [ "$lidarralbumtypelower" == "single" ]; then
 								DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type==\"single\") | .id" | wc -l)
 								DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type==\"single\") | .id"))
@@ -438,10 +439,25 @@ WantedMode () {
 							fi
 							if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
 								echo "$logheader :: ERROR :: No albums found..."
+								echo "$logheader :: Searching without filter..."
+								if  [ "$lidarralbumtypelower" == "single" ]; then
+									DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type==\"single\") | .id" | wc -l)
+									DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type==\"single\") | .id"))
+								else
+									DeezerArtistAlbumListSortTotal="0"
+								fi
+								if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
+									DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.record_type!=\"single\") | .id" | wc -l)
+									DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.record_type!=\"single\") | .id"))
+								fi
+							fi
+							
+							if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
+								echo "$logheader :: ERROR :: No albums found..."
 								albumdeezerurl=""
 								continue
 							fi
-							echo "$logheader :: Filtering out Titles not containing \"$first\""
+	
 							echo "$logheader :: Checking $DeezerArtistAlbumListSortTotal Albums for match ($albumtitle) with Max Distance Score of 2 or less"
 							for id in ${!DeezerArtistAlbumListAlbumID[@]}; do
 								currentprocess=$(( $id + 1 ))
@@ -480,6 +496,7 @@ WantedMode () {
 								firstlower=${first,,}
 								albumsdata=$(cat "/config/cache/$sanatizedartistname-$albumartistmbzid-$deezerartistid-albums.json")
 								albumsdatalower=${albumsdata,,}
+								echo "$logheader :: Filtering out Titles not containing \"$first\""
 								if  [ "$lidarralbumtypelower" == "single" ]; then
 									DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type==\"single\") | .id" | wc -l)
 									DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type==\"single\") | .id"))
@@ -492,10 +509,23 @@ WantedMode () {
 								fi
 								if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
 									echo "$logheader :: ERROR :: No albums found..."
+									echo "$logheader :: Searching without filter..."
+									if  [ "$lidarralbumtypelower" == "single" ]; then
+										DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type==\"single\") | .id" | wc -l)
+										DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.record_type==\"single\") | .id"))
+									else
+										DeezerArtistAlbumListSortTotal="0"
+									fi
+									if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
+										DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.record_type!=\"single\") | .id" | wc -l)
+										DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq ".data | sort_by(.explicit_lyrics, .nb_tracks) | reverse | .[] | select(.record_type!=\"single\") | .id"))
+									fi
+								fi
+								if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
+									echo "$logheader :: ERROR :: No albums found..."
 									albumdeezerurl=""
 									continue
 								fi
-								echo "$logheader :: Filtering out Titles not containing \"$first\""
 								echo "$logheader :: Checking $DeezerArtistAlbumListSortTotal Albums for match ($albumtitle) with Max Distance Score of $MatchDistance or less"
 								for id in ${!DeezerArtistAlbumListAlbumID[@]}; do
 									currentprocess=$(( $id + 1 ))
@@ -602,6 +632,13 @@ WantedMode () {
 					fi
 					echo "$logheader :: Filtering out Titles not containing \"$first\""
 					deezersearchcount="$(echo "$searchdata" | jq -r ".album.id" | sort -u | wc -l)"
+					echo "$logheader :: $deezersearchcount Albums Found"
+					if [ "$deezersearchcount" == "0" ]; then
+						echo "$logheader :: ERROR :: No albums found..."
+						echo "$logheader :: Searching without filter..."
+						searchdata=$(echo "$deezersearchdatalower")
+						deezersearchcount="$(echo "$searchdata" | jq -r ".album.id" | sort -u | wc -l)"
+					fi
 					echo "$logheader :: $deezersearchcount Albums Found"
 					if [ -z "$deezersearchalbumid" ]; then
 						if [ ! -d "/config/scripts/temp" ]; then
