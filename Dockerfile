@@ -2,7 +2,7 @@ FROM lsiobase/ubuntu:focal
 LABEL maintainer="RandomNinjaAtk"
 
 ENV TITLE="Automated Music Downloader (AMD)"
-ENV VERSION="1.0.10"
+ENV VERSION="1.0.11"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV DOWNLOADMODE="wanted"
@@ -27,6 +27,7 @@ RUN \
 		/var/tmp/* && \
 	echo "************ install python packages ************" && \
 	python3 -m pip install --no-cache-dir -U \
+		yq \
 		mutagen \
 		r128gain \
 		deemix && \
