@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.0"
+	echo "############################################ SCRIPT VERSION 1.5.1"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -332,6 +332,11 @@ ArtistMode () {
 		logheader=""
 		logheader="$artistnumber of $wantedtotal :: $LidArtistNameCap"
 		logheaderartiststart="$logheader"
+		echo "$logheader"
+		if [ -f "/config/cache/$LidArtistNameCapClean-$mbid-artist-complete" ]; then
+			echo "$logheader :: Already Archived, skipping..."
+			continue
+		fi
 		
 		for url in ${!deezerartisturl[@]}; do
 			if [ ! -d "$pathbasename" ]; then
@@ -342,12 +347,13 @@ ArtistMode () {
 			deezerid="${deezerartisturl[$url]}"
 			DeezerArtistID=$(echo "${deezerid}" | grep -o '[[:digit:]]*')
 			artisturl="https://deezer.com/artist/$DeezerArtistID"
-			deezeralbumlist="$(curl -s "https://api.deezer.com/artist/$DeezerArtistID/albums&limit=1000")"
+			curl -s "https://api.deezer.com/artist/$DeezerArtistID/albums&limit=1000" -o "/config/cache/$LidArtistNameCapClean-$mbid-$DeezerArtistID-albumlist.json"
+			deezeralbumlist="$(cat "/config/cache/$LidArtistNameCapClean-$mbid-$DeezerArtistID-albumlist.json")"
 			deezeralbumlistcount="$(echo "${deezeralbumlist}" | jq -r ".total")"
 			deezeralbumlistids=($(echo "${deezeralbumlist}" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | .[].id"))
 			logheader="$logheader :: $urlnumber of $deezerartisturlcount"
 			logheaderstart="$logheader"
-			echo "$logheader"			
+			echo "$logheader"
 			
 			for id in ${!deezeralbumlistids[@]}; do
 				deezeralbumprocess=$(( $id + 1 ))
@@ -438,6 +444,7 @@ ArtistMode () {
 			done
 			logheader="$logheaderartiststart"
 		done
+	touch "/config/cache/$LidArtistNameCapClean-$mbid-artist-complete"
 	done
 }
 
