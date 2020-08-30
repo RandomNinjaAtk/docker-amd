@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.4.3"
+	echo "############################################ SCRIPT VERSION 1.5.0"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -101,28 +101,7 @@ Configuration () {
 		error=1
 	fi
 
-	if [ "$LIST" == "both" ]; then
-		echo "Audio: Wanted List Type: Both (missing & cutoff)"
-	elif [ "$LIST" == "missing" ]; then
-		echo "Audio: Wanted List Type: Missing"
-	elif [ "$LIST" == "cutoff" ]; then
-		echo "Audio: Wanted List Type: Cutoff"
-	else
-		echo "WARNING: LIST type not selected, using default..."
-		echo "Audio: Wanted List Type: Missing"
-		LIST="missing"
-	fi
-
-	if [ "$SearchType" == "both" ]; then
-		echo "Audio: Search Type: Artist Searching & Backup Fuzzy Searching"
-	elif [ "$SearchType" == "artist" ]; then
-		echo "Audio: Search Type: Artist Searching Only (Exception: Fuzzy search only for Various Artists)"
-	elif [ "$SearchType" == "fuzzy" ]; then
-		echo "Audio: Search Type: Fuzzy Searching Only"
-	else
-		echo "Audio: Search Type: Artist Searching & Backup Fuzzy Searching"
-		SearchType="both"
-	fi
+	
 
 	if [ ! -z "$Concurrency" ]; then
 		echo "Audio: Concurrency: $Concurrency"
@@ -146,7 +125,41 @@ Configuration () {
 		echo "Audio: Download Bitrate: lossless"
 		quality="FLAC"
 	fi
-
+	
+	if [ "$DOWNLOADMODE" == "artist" ]; then
+		echo "Audio: Dowload Mode: $DOWNLOADMODE (Archives all albums by artist)"
+		wantit=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/rootFolder")
+		path=($(echo "${wantit}" | jq -r ".[].path"))
+		for id in ${!path[@]}; do
+			pathprocess=$(( $id + 1 ))
+			folder="${path[$id]}"
+			if [ ! -d "$folder" ]; then
+				echo "ERROR: \"$folder\" Path not found, add missing volume that matches Lidarr"
+				error=1
+				break
+			else
+				continue
+			fi
+		done
+		
+		if [ "$NOTIFYPLEX" == "true" ]; then
+			echo "Audio: Plex Library Notification: ENABLED"
+			plexlibraries="$(curl -s "$PLEXURL/library/sections?X-Plex-Token=$PLEXTOKEN" | xq .)"
+			curl -s "$PLEXURL/library/sections?X-Plex-Token=$PLEXTOKEN" | xq . >> plex.json
+			for id in ${!path[@]}; do
+				pathprocess=$(( $id + 1 ))
+				folder="${path[$id]%?}"
+				plexlibrarykey="$(echo "$plexlibraries" | jq -r ".MediaContainer.Directory[] | select(.Location.\"@path\"==\"$folder\") | .\"@key\"" | head -n 1)"
+				if [ -z "$plexlibrarykey" ]; then
+					echo "ERROR: No Plex Library found containg path \"$folder\""
+					echo "ERROR: Add \"$folder\" as a folder to a Plex Music Library or Disable NOTIFYPLEX"
+					error=1
+				fi
+			done
+		else
+			echo "Audio : Plex Library Notification: DISABLED"
+		fi
+	fi
 	if [ ! -z "$requirequality" ]; then
 		if [ "$requirequality" == "true" ]; then
 			echo "Audio: Require Quality: ENABLED"
@@ -157,13 +170,40 @@ Configuration () {
 		echo "WARNING: requirequality setting invalid, defaulting to: false"
 		requirequality="false"
 	fi
+	
+	if [ "$DOWNLOADMODE" == "wanted" ]; then
+		echo "Audio: Dowload Mode: $DOWNLOADMODE (Processes monitored albums)"
+		if [ "$LIST" == "both" ]; then
+			echo "Audio: Wanted List Type: Both (missing & cutoff)"
+		elif [ "$LIST" == "missing" ]; then
+			echo "Audio: Wanted List Type: Missing"
+		elif [ "$LIST" == "cutoff" ]; then
+			echo "Audio: Wanted List Type: Cutoff"
+		else
+			echo "WARNING: LIST type not selected, using default..."
+			echo "Audio: Wanted List Type: Missing"
+			LIST="missing"
+		fi
 
-	if [ ! -z "$MatchDistance" ]; then
-		echo "Audio: Match Distance: $MatchDistance"
-	else
-		echo "WARNING: MatchDistance not set, using default..."
-		MatchDistance="10"
-		echo "Audio: Match Distance: $MatchDistance"
+		if [ "$SearchType" == "both" ]; then
+			echo "Audio: Search Type: Artist Searching & Backup Fuzzy Searching"
+		elif [ "$SearchType" == "artist" ]; then
+			echo "Audio: Search Type: Artist Searching Only (Exception: Fuzzy search only for Various Artists)"
+		elif [ "$SearchType" == "fuzzy" ]; then
+			echo "Audio: Search Type: Fuzzy Searching Only"
+		else
+			echo "Audio: Search Type: Artist Searching & Backup Fuzzy Searching"
+			SearchType="both"
+		fi
+	
+		if [ ! -z "$MatchDistance" ]; then
+			echo "Audio: Match Distance: $MatchDistance"
+		else
+			echo "WARNING: MatchDistance not set, using default..."
+			MatchDistance="10"
+			echo "Audio: Match Distance: $MatchDistance"
+		fi
+		
 	fi
 
 	if [ ! -z "$replaygain" ]; then
@@ -270,6 +310,135 @@ LidarrList () {
 	if [ -f "/config/scripts/lidarr-monitored-list.json" ]; then
 		rm "/config/scripts/lidarr-monitored-list.json"
 	fi
+}
+
+ArtistMode () {
+	echo "############################################ DOWNLOAD AUDIO (ARTIST MODE)"
+	wantit=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/Artist/")
+	wantedtotal=$(echo "${wantit}"|jq -r '.[].sortName' | wc -l)
+	MBArtistID=($(echo "${wantit}" | jq -r ".[].foreignArtistId"))
+	for id in ${!MBArtistID[@]}; do
+		artistnumber=$(( $id + 1 ))
+		mbid="${MBArtistID[$id]}"
+		albumartistmbzid="$mbid"
+		LidArtistPath="$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .path")"
+		pathbasename="$(dirname "$LidArtistPath")"
+		LidArtistNameCap="$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .artistName")"
+		albumartistname="$LidArtistNameCap"
+		LidArtistNameCapClean="$(echo "${LidArtistNameCap}" | sed -e "s/[^A-Za-z0-9._()'\ ]//g" -e "s/  */ /g")"
+		deezerartisturl=""
+		deezerartisturl=($(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .links | .[] | select(.name==\"deezer\") | .url"))
+		deezerartisturlcount=$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .links | .[] | select(.name==\"deezer\") | .url" | wc -l)
+		logheader=""
+		logheader="$artistnumber of $wantedtotal :: $LidArtistNameCap"
+		logheaderartiststart="$logheader"
+		
+		for url in ${!deezerartisturl[@]}; do
+			if [ ! -d "$pathbasename" ]; then
+				echo "ERROR: Path not found, add missing volume that matches Lidarr"
+				#continue
+			fi
+			urlnumber=$(( $url + 1 ))
+			deezerid="${deezerartisturl[$url]}"
+			DeezerArtistID=$(echo "${deezerid}" | grep -o '[[:digit:]]*')
+			artisturl="https://deezer.com/artist/$DeezerArtistID"
+			deezeralbumlist="$(curl -s "https://api.deezer.com/artist/$DeezerArtistID/albums&limit=1000")"
+			deezeralbumlistcount="$(echo "${deezeralbumlist}" | jq -r ".total")"
+			deezeralbumlistids=($(echo "${deezeralbumlist}" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | .[].id"))
+			logheader="$logheader :: $urlnumber of $deezerartisturlcount"
+			logheaderstart="$logheader"
+			echo "$logheader"			
+			
+			for id in ${!deezeralbumlistids[@]}; do
+				deezeralbumprocess=$(( $id + 1 ))
+				deezeralbumid="${deezeralbumlistids[$id]}"
+				deezeralbumdata="$(curl -s "https://api.deezer.com/album/$deezeralbumid")"
+				deezeralbumurl="https://deezer.com/album/$deezeralbumid"
+				deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
+				deezeralbumtitleclean="$(echo "$deezeralbumtitle" | sed -e "s/[^A-Za-z0-9._()'\ ]//g" -e "s/  */ /g")"
+				deezeralbumartistid="$(echo "$deezeralbumdata" | jq -r ".artist.id" | head -n 1)"
+				deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
+				deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
+				deezeralbumexplicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
+				if [ "$deezeralbumexplicit" == "true" ]; then 
+					lyrictype="EXLPICIT"
+				else
+					lyrictype="CLEAN"
+				fi
+				deezeralbumyear="${deezeralbumdate:0:4}"
+				albumfolder="$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean ($deezeralbumid)"
+				logheader="$logheader :: $deezeralbumprocess of $deezeralbumlistcount :: PROCESSING :: ${deezeralbumtype^^} :: $deezeralbumyear :: $lyrictype :: $deezeralbumtitle"
+				echo "$logheader"
+				if [ $deezeralbumartistid != $DeezerArtistID ]; then
+					echo "$logheader :: Arist ID does not match, skipping..."
+					logheader="$logheaderstart"
+					continue
+				fi
+				if [ -d "$LidArtistPath" ]; then
+					if [ "$deezeralbumtype" != "single" ]; then
+						if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean*" | read; then
+							echo "$logheader :: Duplicate found..."
+							logheader="$logheaderstart"
+							continue
+						fi
+					fi
+					if [ "$deezeralbumtype" == "single" ]; then
+						if [ "$deezeralbumexplicit" == "false" ]; then
+							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean*" | read; then
+								echo "$logheader :: Duplicate Explicit Album already downloaded, skipping..."
+								logheader="$logheaderstart"
+								continue
+							fi
+						fi
+					fi
+					if find "$LidArtistPath" -iname "* ($deezeralbumid)" | read; then
+						echo "$logheader :: Alaready Downloaded..."
+						logheader="$logheaderstart"
+						continue
+					fi
+				fi
+				logheader="$logheader :: DOWNLOAD"
+				echo "$logheader :: Sending \"$deezeralbumurl\" to download client..."
+				if python3 /config/scripts/dlclient.py -b $quality "$deezeralbumurl"; then
+					sleep 0.5
+					if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+						DownloadQualityCheck
+					fi
+					if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+						find "$DOWNLOADS"/amd/dlclient -type d -exec chmod $FolderPermissions {} \;
+						find "$DOWNLOADS"/amd/dlclient -type f -exec chmod $FilePermissions {} \;
+						chown -R abc:abc "$DOWNLOADS"/amd/dlclient
+					else
+						echo "$logheader :: DOWNLOAD :: ERROR :: No files found"
+						continue
+					fi
+				fi
+				TagFix
+				AddReplaygainTags
+				
+				file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
+				if [ ! -z "$file" ]; then
+					artwork="$(dirname "$file")/folder.jpg"
+					if ffmpeg -y -i "$file" -c:v copy "$artwork" 2>/dev/null; then
+						echo "$logheader :: Artwork Extracted"
+					else
+						echo "$logheader :: ERROR :: No artwork found"
+					fi
+				fi
+				
+				if [ ! -d "$LidArtistPath/$albumfolder" ]; then
+					mkdir -p "$LidArtistPath/$albumfolder"
+					chmod $FolderPermissions "$LidArtistPath/$albumfolder"
+				fi
+				mv "$DOWNLOADS"/amd/dlclient/* "$LidArtistPath/$albumfolder"/
+				chmod $FilePermissions "$LidArtistPath/$albumfolder"/*
+				chown -R abc:abc "$LidArtistPath/$albumfolder"
+				PlexNotification
+				logheader="$logheaderstart"
+			done
+			logheader="$logheaderartiststart"
+		done
+	done
 }
 
 WantedMode () {
@@ -970,10 +1139,25 @@ function levenshtein {
 	fi
 }
 
+PlexNotification () {
+	if [ "$NOTIFYPLEX" == "true" ]; then
+		plexlibrarykey="$(echo "$plexlibraries" | jq -r ".MediaContainer.Directory[] | select(.Location.\"@path\"==\"$pathbasename\") | .\"@key\"" | head -n 1)"
+		plexfolder="$LidArtistPath/$albumfolder"
+		plexfolderencoded="$(jq -R -r @uri <<<"${plexfolder}")"
+		curl -s "$PLEXURL/library/sections/$plexlibrarykey/refresh?path=$plexfolderencoded&X-Plex-Token=$PLEXTOKEN"
+		echo "$logheader :: Plex Scan notification sent! ($albumfolder)"
+	fi
+}
+
 Configuration
 CreateDownloadFolders
 SetFolderPermissions
 CleanupFailedImports
-WantedMode
+if [ "$DOWNLOADMODE" == "artist" ]; then
+	ArtistMode
+fi
+if [ "$DOWNLOADMODE" == "wanted" ]; then
+	WantedMode
+fi
 
 exit 0
