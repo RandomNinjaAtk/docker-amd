@@ -46,6 +46,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e PUID=1000` | for UserID - see below for explanation |
 | `-e PGID=1000` | for GroupID - see below for explanation |
 | `-e AUTOSTART=true` | true = Enabled :: Runs script automatically on startup |
+| `-e DOWNLOADMODE=wanted` | wanted or artist :: wanted mode only download missing/cutoff :: artist mode downloads all albums by an artist (requires lidarr volume mapping root media folders for import) |
 | `-e LIST=both` | both or missing or cutoff :: both = missing + cutoff :: missng = lidarr missing list :: cutoff = lidarr cutoff list |
 | `-e SearchType=both` | both or artist or fuzzy :: both = artist + fuzzy searching :: artist = only artist searching :: fuzzy = only fuzzy searching (Various Artist is always fuzzy searched, regardless of setting) |
 | `-e Concurrency=1` | Number of concurrent processes (downloads and caching threads) |
@@ -57,10 +58,13 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e FilePermissions=666` | Based on chmod linux permissions |
 | `-e MBRAINZMIRROR=https://musicbrainz.org` | OPTIONAL :: Only change if using a different mirror |
 | `-e MBRATELIMIT=1` | OPTIONAL: musicbrainz rate limit, musicbrainz allows only 1 connection per second, max setting is 10 :: Set to 101 to disable limit |
-| `-e LidarrUrl=http://127.0.0.1:8686` | Set domain or IP to your Lidarr instance including port. If using reverse proxy, do not use a trailing slash. Ensure you specify http/s. |
+| `-e LidarrUrl=http://x.x.x.x:8686` | Set domain or IP to your Lidarr instance including port. If using reverse proxy, do not use a trailing slash. Ensure you specify http/s. |
 | `-e LidarrAPIkey=LIDARRAPI` | Lidarr API key. |
 | `-e ARL_TOKEN=ARLTOKEN` | User token for dl client, for instructions to obtain token: https://notabug.org/RemixDevs/DeezloaderRemix/wiki/Login+via+userToken |
 | `-e LIDARRREMOTEPATH="/path/to/downloads-amd` | OPTIONAL :: ADVANCED FEATURE :: Configure this to the local volume path for Lidarr to see the downloads folder, this will enable file moves, instead of copies... Less resource intensive |
+| `-e NOTIFYPLEX=false` | true = enabled :: ONLY APPLIES ARTIST MODE :: Plex must have a music library added and be configured to use the exact same mount point as Lidarr's root folder |
+| `-e PLEXURL=http://x.x.x.x:32400` | ONLY used if NOTIFYPLEX is enabled... |
+| `-e PLEXTOKEN=plextoken` | ONLY used if NOTIFYPLEX is enabled... |
 
 ## Usage
 
@@ -76,6 +80,7 @@ docker create \
   -e PUID=1000 \
   -e PGID=1000 \
   -e AUTOSTART=true \
+  -e DOWNLOADMODE=wanted \
   -e LIST=both \
   -e SearchType=both \
   -e Concurrency=1 \
@@ -87,9 +92,12 @@ docker create \
   -e FilePermissions=666 \
   -e MBRAINZMIRROR=https://musicbrainz.org \
   -e MBRATELIMIT=1 \
-  -e LidarrUrl=http://127.0.0.1:8686 \
+  -e LidarrUrl=http://x.x.x.x:8686 \
   -e LidarrAPIkey=LIDARRAPI \
   -e ARL_TOKEN=ARLTOKEN	\
+  -e NOTIFYPLEX=false \
+  -e PLEXURL=http://x.x.x.x:8686 \
+  -e PLEXTOKEN=plextoken \
   --restart unless-stopped \
   randomninjaatk/amd 
 ```
@@ -100,7 +108,6 @@ docker create \
 Compatible with docker-compose v2 schemas.
 
 ```
----
 version: "2.1"
 services:
   amd:
@@ -127,6 +134,9 @@ services:
       - LidarrUrl=http://127.0.0.1:8686
       - LidarrAPIkey=LIDARRAPI
       - ARL_TOKEN=ARLTOKEN
+      - NOTIFYPLEX=false
+      - PLEXURL=http://x.x.x.x:8686
+      - PLEXTOKEN=plextoken
     restart: unless-stopped
 ```
 
