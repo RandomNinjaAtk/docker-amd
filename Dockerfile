@@ -2,9 +2,10 @@ FROM lsiobase/ubuntu:focal
 LABEL maintainer="RandomNinjaAtk"
 
 ENV TITLE="Automated Music Downloader (AMD)"
-ENV VERSION="1.0.9"
+ENV VERSION="1.0.10"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
+ENV DOWNLOADMODE="wanted"
 
 RUN \
 	echo "************ install dependencies ************" && \
