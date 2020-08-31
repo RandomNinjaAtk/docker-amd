@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.5"
+	echo "############################################ SCRIPT VERSION 1.5.6"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -190,8 +190,13 @@ Configuration () {
 			for id in ${!path[@]}; do
 				pathprocess=$(( $id + 1 ))
 				folder="${path[$id]%?}"
-				plexlibrarykey="$(echo "$plexlibraries" | jq -r ".MediaContainer.Directory[] | select(.Location.\"@path\"==\"$folder\") | .\"@key\"" | head -n 1)"
-				if [ -z "$plexlibrarykey" ]; then
+				if echo "$plexlibraries" | grep "$folder" | read; then
+					plexlibrarykey="$(echo "$plexlibraries" | jq -r ".MediaContainer.Directory[] | select(.\"@title\"==\"$PLEXLIBRARYNAME\") | .\"@key\"" | head -n 1)"
+					if [ -z "$plexlibrarykey" ]; then
+						echo "ERROR: No Plex Library found named \"$PLEXLIBRARYNAME\""
+						error=1
+					fi
+				else
 					echo "ERROR: No Plex Library found containg path \"$folder\""
 					echo "ERROR: Add \"$folder\" as a folder to a Plex Music Library or Disable NOTIFYPLEX"
 					error=1
