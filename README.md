@@ -49,8 +49,9 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e DOWNLOADMODE=wanted` | wanted or artist :: wanted mode only download missing/cutoff :: artist mode downloads all albums by an artist (requires lidarr volume mapping root media folders for import) |
 | `-e LIST=both` | both or missing or cutoff :: both = missing + cutoff :: missng = lidarr missing list :: cutoff = lidarr cutoff list |
 | `-e SearchType=both` | both or artist or fuzzy :: both = artist + fuzzy searching :: artist = only artist searching :: fuzzy = only fuzzy searching (Various Artist is always fuzzy searched, regardless of setting) |
-| `-e Concurrency=1` | Number of concurrent processes (downloads and caching threads) |
-| `-e quality=FLAC` | FLAC or 320 or 128 :: 320/128 are MP3 downloads, FLAC is lossless... |
+| `-e Concurrency=1` | Number of concurrent downloads |
+| `-e FORMAT=FLAC` | FLAC or MP3 or OPUS or AAC or ALAC |
+| `-e BITRATE=320` | FLAC -> OPUS/AAC/MP3 will be converted using this bitrate  (MP3 320/128 is native, not converted) |
 | `-e requirequality=false` | true = enabled :: Requires all downloaded files match target file extension (mp3 or flac) when enabled |
 | `-e MatchDistance=10` | Set as an integer, the higher the number, the more lienet it is. Example: A match score of 0 is a perfect match :: For more information, this score is produced using this function: [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance) |
 | `-e replaygain=true` | true = enabled :: Scans and analyzes files to add replaygain tags to song metadata |
@@ -84,7 +85,8 @@ docker create \
   -e LIST=both \
   -e SearchType=both \
   -e Concurrency=1 \
-  -e quality=FLAC \
+  -e FORMAT=FLAC \
+  -e BITRATE=320 \
   -e requirequality=false \
   -e MatchDistance=10 \
   -e replaygain=true \
@@ -124,7 +126,8 @@ services:
       - LIST=both
       - SearchType=both
       - Concurrency=1
-      - quality=FLAC
+      - FORMAT=FLAC
+      - BITRATE=320
       - requirequality=false
       - MatchDistance=10
       - replaygain=true
