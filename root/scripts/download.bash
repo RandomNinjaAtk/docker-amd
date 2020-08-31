@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.2"
+	echo "############################################ SCRIPT VERSION 1.5.3"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -110,20 +110,62 @@ Configuration () {
 		echo "WARNING: Concurrency setting invalid, defaulting to: 1"
 		Concurrency="1"
 	fi
-
-	if [ "$quality" == "FLAC" ]; then
-		echo "Audio: Download Quality: FLAC"
-		echo "Audio: Download Bitrate: lossless"
-	elif [ "$quality" == "320" ]; then
-		echo "Audio: Download Quality: MP3"
-		echo "Audio: Download Bitrate: 320k"
-	elif [ "$quality" == "128" ]; then
-		echo "Audio: Download Quality: MP3"
-		echo "Audio: Download Bitrate: 128k"
+	
+	if [ ! -z "$FORMAT" ]; then
+		echo "Audio: Download Format: $FORMAT"
+		if [ "$FORMAT" = "ALAC" ]; then
+			quality="FLAC"
+			options="-c:a alac -movflags faststart"
+			extension="m4a"
+			echo "Audio: Download File Bitrate: lossless"
+		elif [ "$FORMAT" = "FLAC" ]; then
+			quality="FLAC"
+			extension="flac"
+			echo "Audio: Download File Bitrate: lossless"
+		elif [ "$FORMAT" = "OPUS" ]; then
+			quality="FLAC"
+			options="-acodec libopus -ab ${BITRATE}k -application audio -vbr off"
+		    extension="opus"
+			echo "Audio: Download File Bitrate: $BITRATE"
+		elif [ "$FORMAT" = "AAC" ]; then
+			quality="FLAC"
+			options="-c:a libfdk_aac -b:a ${BITRATE}k -movflags faststart"
+			extension="m4a"
+			echo "Audio: Download File Bitrate: $BITRATE"
+		elif [ "$FORMAT" = "MP3" ]; then
+			if [ "$BITRATE" = "320" ]; then
+				quality="320"
+				extension="mp3"
+				echo "Audio: Download File Bitrate: $BITRATE"
+			elif [ "$BITRATE" = "128" ]; then
+				quality="128"
+				extension="mp3"
+				echo "Audio: Download File Bitrate: $BITRATE"
+			else
+				quality="FLAC"
+				options="-acodec libmp3lame -ab ${BITRATE}k"
+				extension="mp3"
+				echo "Audio: Download File Bitrate: $BITRATE"
+			fi
+		else
+			echo "ERROR: \"$FORMAT\" Does not match a required setting, check for trailing space..."
+			error=1
+		fi
 	else
-		echo "Audio: Download Quality: FLAC"
-		echo "Audio: Download Bitrate: lossless"
-		quality="FLAC"
+		if [ "$quality" == "FLAC" ]; then
+			echo "Audio: Download Quality: FLAC"
+			echo "Audio: Download Bitrate: lossless"
+		elif [ "$quality" == "320" ]; then
+			echo "Audio: Download Quality: MP3"
+			echo "Audio: Download Bitrate: 320k"
+		elif [ "$quality" == "128" ]; then
+			echo "Audio: Download Quality: MP3"
+			echo "Audio: Download Bitrate: 128k"
+		else
+			echo "Audio: Download Quality: FLAC"
+			echo "Audio: Download Bitrate: lossless"
+			quality="FLAC"
+		fi
 	fi
 	
 	if [ "$DOWNLOADMODE" == "artist" ]; then
@@ -240,6 +282,42 @@ Configuration () {
 	fi
 	amount=1000000000
 	sleep 2.5
+}
+
+
+Conversion () {
+	converttrackcount=$(find  "$DOWNLOADS"/amd/dlclient/ -name "*.flac" | wc -l)
+	if [ "${FORMAT}" != "FLAC" ]; then
+		if find "$DOWNLOADS"/amd/dlclient/ -name "*.flac" | read; then
+			echo "$logheader :: CONVERSION :: Converting: $converttrackcount Tracks (Target Format: $FORMAT (${BITRATE}))"
+			for fname in "$DOWNLOADS"/amd/dlclient/*.flac; do
+				filename="$(basename "${fname%.flac}")"
+				if [ "${FORMAT}" == "OPUS" ]; then
+					if opusenc --bitrate $BITRATE --vbr "$fname" "${fname%.flac}.temp.$extension"; then
+						converterror=0
+					else
+						converterror=1
+					fi
+				else
+					if ffmpeg -loglevel warning -hide_banner -nostats -i "$fname" -n -vn $options "${fname%.flac}.temp.$extension"; then
+						converterror=0
+					else
+						converterror=1
+					fi
+				fi
+				if [ "$converterror" == "1" ]; then
+					echo "$logheader :: CONVERSION :: ERROR :: Coversion Failed: $filename, performing cleanup..."
+					rm "${fname%.flac}.temp.$extension"
+					continue
+				elif [ -f "${fname%.flac}.temp.$extension" ]; then
+					rm "$fname"
+					sleep 0.1
+					mv "${fname%.flac}.temp.$extension" "${fname%.flac}.$extension"
+					echo "$logheader :: CONVERSION :: $filename :: Converted!"
+				fi
+			done
+		fi
+	fi
 }
 
 DownloadQualityCheck () {
@@ -426,6 +504,7 @@ ArtistMode () {
 					fi
 				fi
 				TagFix
+				Conversion
 				AddReplaygainTags
 				
 				file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
@@ -1027,6 +1106,7 @@ WantedMode () {
 		fi
 
 		TagFix
+		Conversion
 		AddReplaygainTags
 
 		if [ ! -d "$DOWNLOADS/amd/import" ]; then
