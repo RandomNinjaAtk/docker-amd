@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.1"
+	echo "############################################ SCRIPT VERSION 1.5.2"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -333,6 +333,12 @@ ArtistMode () {
 		logheader="$artistnumber of $wantedtotal :: $LidArtistNameCap"
 		logheaderartiststart="$logheader"
 		echo "$logheader"
+		
+		if [ -z "$deezerartisturl" ]; then
+			echo "$logheader :: ERROR :: Deezer Artist ID not found..."
+			continue
+		fi
+		
 		if [ -f "/config/cache/$LidArtistNameCapClean-$mbid-artist-complete" ]; then
 			echo "$logheader :: Already Archived, skipping..."
 			continue
