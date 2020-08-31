@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.3"
+	echo "############################################ SCRIPT VERSION 1.5.4"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -434,7 +434,7 @@ ArtistMode () {
 			curl -s "https://api.deezer.com/artist/$DeezerArtistID/albums&limit=1000" -o "/config/cache/$LidArtistNameCapClean-$mbid-$DeezerArtistID-albumlist.json"
 			deezeralbumlist="$(cat "/config/cache/$LidArtistNameCapClean-$mbid-$DeezerArtistID-albumlist.json")"
 			deezeralbumlistcount="$(echo "${deezeralbumlist}" | jq -r ".total")"
-			deezeralbumlistids=($(echo "${deezeralbumlist}" | jq -r ".data | sort_by(.explicit_lyrics) | reverse | .[].id"))
+			deezeralbumlistids=($(echo "${deezeralbumlist}" | jq -r ".data |  sort_by(.release_date) | reverse | (sort_by(.explicit_lyrics) | reverse) | .[].id"))
 			logheader="$logheader :: $urlnumber of $deezerartisturlcount"
 			logheaderstart="$logheader"
 			echo "$logheader"
@@ -451,12 +451,12 @@ ArtistMode () {
 				deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
 				deezeralbumexplicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
 				if [ "$deezeralbumexplicit" == "true" ]; then 
-					lyrictype="EXLPICIT"
+					lyrictype="EXPLICIT"
 				else
 					lyrictype="CLEAN"
 				fi
 				deezeralbumyear="${deezeralbumdate:0:4}"
-				albumfolder="$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean ($deezeralbumid)"
+				albumfolder="$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean ($lyrictype) ($deezeralbumid)"
 				logheader="$logheader :: $deezeralbumprocess of $deezeralbumlistcount :: PROCESSING :: ${deezeralbumtype^^} :: $deezeralbumyear :: $lyrictype :: $deezeralbumtitle"
 				echo "$logheader"
 				if [ $deezeralbumartistid != $DeezerArtistID ]; then
@@ -465,16 +465,18 @@ ArtistMode () {
 					continue
 				fi
 				if [ -d "$LidArtistPath" ]; then
-					if [ "$deezeralbumtype" != "single" ]; then
-						if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean*" | read; then
-							echo "$logheader :: Duplicate found..."
-							logheader="$logheaderstart"
-							continue
+					if [ "${deezeralbumtype^^}" != "SINGLE" ]; then
+						if [ "$deezeralbumexplicit" == "false" ]; then
+							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - * - $deezeralbumtitleclean (EXPLICIT) *" | read; then
+								echo "$logheader :: Duplicate found..."
+								logheader="$logheaderstart"
+								continue
+							fi
 						fi
 					fi
-					if [ "$deezeralbumtype" == "single" ]; then
+					if [ "${deezeralbumtype^^}" == "SINGLE" ]; then
 						if [ "$deezeralbumexplicit" == "false" ]; then
-							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean*" | read; then
+							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - * - $deezeralbumtitleclean (EXPLICIT) *" | read; then
 								echo "$logheader :: Duplicate Explicit Album already downloaded, skipping..."
 								logheader="$logheaderstart"
 								continue
