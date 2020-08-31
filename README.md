@@ -64,6 +64,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e ARL_TOKEN=ARLTOKEN` | User token for dl client, for instructions to obtain token: https://notabug.org/RemixDevs/DeezloaderRemix/wiki/Login+via+userToken |
 | `-e LIDARRREMOTEPATH="/path/to/downloads-amd` | OPTIONAL :: ADVANCED FEATURE :: Configure this to the local volume path for Lidarr to see the downloads folder, this will enable file moves, instead of copies... Less resource intensive |
 | `-e NOTIFYPLEX=false` | true = enabled :: ONLY APPLIES ARTIST MODE :: Plex must have a music library added and be configured to use the exact same mount point as Lidarr's root folder |
+| `-e PLEXLIBRARYNAME=Music` | This must exactly match the name of the Plex Library that contains the Lidarr Media Folder data |
 | `-e PLEXURL=http://x.x.x.x:32400` | ONLY used if NOTIFYPLEX is enabled... |
 | `-e PLEXTOKEN=plextoken` | ONLY used if NOTIFYPLEX is enabled... |
 
@@ -98,6 +99,7 @@ docker create \
   -e LidarrAPIkey=LIDARRAPI \
   -e ARL_TOKEN=ARLTOKEN	\
   -e NOTIFYPLEX=false \
+  -e PLEXLIBRARYNAME=Music \
   -e PLEXURL=http://x.x.x.x:8686 \
   -e PLEXTOKEN=plextoken \
   --restart unless-stopped \
@@ -139,6 +141,7 @@ services:
       - LidarrAPIkey=LIDARRAPI
       - ARL_TOKEN=ARLTOKEN
       - NOTIFYPLEX=false
+      - PLEXLIBRARYNAME=Music
       - PLEXURL=http://x.x.x.x:8686
       - PLEXTOKEN=plextoken
     restart: unless-stopped
