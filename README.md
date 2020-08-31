@@ -120,6 +120,7 @@ services:
       - PUID=1000
       - PGID=1000
       - AUTOSTART=true
+      - DOWNLOADMODE=wanted
       - LIST=both
       - SearchType=both
       - Concurrency=1
@@ -131,7 +132,7 @@ services:
       - FilePermissions=666
       - MBRAINZMIRROR=https://musicbrainz.org
       - MBRATELIMIT=1
-      - LidarrUrl=http://127.0.0.1:8686
+      - LidarrUrl=http://x.x.x.x:8686
       - LidarrAPIkey=LIDARRAPI
       - ARL_TOKEN=ARLTOKEN
       - NOTIFYPLEX=false
