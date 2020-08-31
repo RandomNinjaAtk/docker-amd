@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.4"
+	echo "############################################ SCRIPT VERSION 1.5.5"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -187,7 +187,6 @@ Configuration () {
 		if [ "$NOTIFYPLEX" == "true" ]; then
 			echo "Audio: Plex Library Notification: ENABLED"
 			plexlibraries="$(curl -s "$PLEXURL/library/sections?X-Plex-Token=$PLEXTOKEN" | xq .)"
-			curl -s "$PLEXURL/library/sections?X-Plex-Token=$PLEXTOKEN" | xq . >> plex.json
 			for id in ${!path[@]}; do
 				pathprocess=$(( $id + 1 ))
 				folder="${path[$id]%?}"
