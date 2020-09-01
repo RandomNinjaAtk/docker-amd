@@ -14,15 +14,20 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.6"
+	echo "############################################ SCRIPT VERSION 1.5.7"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
 
-	if [ "$AUTOSTART" = "true" ]; then
-		echo "Automatic Start: ENABLED"
+	if [ "$AUTOSTART" == "true" ]; then
+		echo "$TITLESHORT Script Autostart: ENABLED"
+		if [ -z "$SCRIPTINTERVAL" ]; then
+			echo "WARNING: $TITLESHORT Script Interval not set! Using default..."
+			SCRIPTINTERVAL="15m"
+		fi
+		echo "$TITLESHORT Script Interval: $SCRIPTINTERVAL"
 	else
-		echo "Automatic Start: DISABLED"
+		echo "$TITLESHORT Script Autostart: DISABLED"
 	fi
 
 	# Verify Lidarr Connectivity
@@ -1257,6 +1262,10 @@ if [ "$DOWNLOADMODE" == "artist" ]; then
 fi
 if [ "$DOWNLOADMODE" == "wanted" ]; then
 	WantedMode
+fi
+echo "############################################ SCRIPT COMPLETE"
+if [ "$AUTOSTART" == "true" ]; then
+	echo "############################################ SCRIPT SLEEPING FOR $SCRIPTINTERVAL"
 fi
 
 exit 0
