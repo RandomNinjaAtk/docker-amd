@@ -46,6 +46,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e PUID=1000` | for UserID - see below for explanation |
 | `-e PGID=1000` | for GroupID - see below for explanation |
 | `-e AUTOSTART=true` | true = Enabled :: Runs script automatically on startup |
+| `-e SCRIPTINTERVAL=1h` | #s or #m or #h or #d :: s = seconds, m = minutes, h = hours, d = days :: Amount of time between each script run, when AUTOSTART is enabled|
 | `-e DOWNLOADMODE=wanted` | wanted or artist :: wanted mode only download missing/cutoff :: artist mode downloads all albums by an artist (requires lidarr volume mapping root media folders for import) |
 | `-e LIST=both` | both or missing or cutoff :: both = missing + cutoff :: missng = lidarr missing list :: cutoff = lidarr cutoff list |
 | `-e SearchType=both` | both or artist or fuzzy :: both = artist + fuzzy searching :: artist = only artist searching :: fuzzy = only fuzzy searching (Various Artist is always fuzzy searched, regardless of setting) |
@@ -82,6 +83,7 @@ docker create \
   -e PUID=1000 \
   -e PGID=1000 \
   -e AUTOSTART=true \
+  -e SCRIPTINTERVAL=1h \
   -e DOWNLOADMODE=wanted \
   -e LIST=both \
   -e SearchType=both \
@@ -124,6 +126,7 @@ services:
       - PUID=1000
       - PGID=1000
       - AUTOSTART=true
+      - SCRIPTINTERVAL=1h
       - DOWNLOADMODE=wanted
       - LIST=both
       - SearchType=both
