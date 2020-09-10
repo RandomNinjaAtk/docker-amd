@@ -31,12 +31,13 @@ class cli(deemix):
         self.set.settings["tags"]["explicit"] = True
         self.set.settings["tags"]["length"] = False
         self.set.settings["tags"]["lyrics"] = True
+        self.set.settings["tags"]["syncedLyrics"] = True
         self.set.settings["tags"]["involvedPeople"] = True
         self.set.settings["tags"]["copyright"] = True
         self.set.settings["tags"]["composer"] = True
         self.set.settings["tags"]["savePlaylistAsCompilation"] = True
         self.set.settings["removeDuplicateArtists"] = True
-        self.set.settings["featuredToTitle"] = "3"
+        self.set.settings["featuredToTitle"] = "0"
         self.set.settings["tags"]["saveID3v1"] = False
         self.set.settings["tags"]["multiArtistSeparator"] = "andFeat"
         self.set.settings["tags"]["singleAlbumArtist"] = True
