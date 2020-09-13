@@ -47,9 +47,9 @@ class cli(deemix):
         for link in url:
             if ';' in link:
                 for l in link.split(";"):
-                    self.qm.addToQueue(self.dz, self.sp, l, self.set.settings, bitrate)
+                    self.qm.addToQueue(self.dz, l, self.set.settings, bitrate)
             else:
-                self.qm.addToQueue(self.dz, self.sp, link, self.set.settings, bitrate)
+                self.qm.addToQueue(self.dz, link, self.set.settings, bitrate)
 
     def requestValidArl(self):
         while True:
