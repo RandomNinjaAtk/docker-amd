@@ -3,7 +3,7 @@ LABEL maintainer="RandomNinjaAtk"
 
 ENV TITLE="Automated Music Downloader (AMD)"
 ENV TITLESHORT="AMD"
-ENV VERSION="1.0.12"
+ENV VERSION="1.0.13"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV DOWNLOADMODE="wanted"
@@ -14,6 +14,7 @@ RUN \
 	apt-get update -y && \
 	apt-get upgrade -y && \
 	apt-get install -y --no-install-recommends \
+		netbase \
 		jq \
 		mp3val \
 		flac \
