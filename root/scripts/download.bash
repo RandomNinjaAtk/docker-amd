@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.9"
+	echo "############################################ SCRIPT VERSION 1.5.10"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -753,6 +753,7 @@ WantedMode () {
 
 						for id in "${!lidarralbumdrecordids[@]}"; do
 							ablumrecordreleaseid=${lidarralbumdrecordids[$id]}
+							albummbid="$ablumrecordreleaseid"
 							ablumrecordreleasedata=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.foreignReleaseId==\"$ablumrecordreleaseid\")")
 							albumtitle="$(echo "$ablumrecordreleasedata" | jq -r '.title')"
 							albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')
@@ -801,6 +802,7 @@ WantedMode () {
 						if [ -z "$albumdeezerurl" ]; then
 							for id in "${!lidarralbumdrecordids[@]}"; do
 								ablumrecordreleaseid=${lidarralbumdrecordids[$id]}
+								albummbid="$ablumrecordreleaseid"
 								ablumrecordreleasedata=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.foreignReleaseId==\"$ablumrecordreleaseid\")")
 								albumtitle="$(echo "$ablumrecordreleasedata" | jq -r '.title')"
 								albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')								
