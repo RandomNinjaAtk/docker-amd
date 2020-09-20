@@ -8,7 +8,7 @@ COPY --from=ffmpeg /usr/local/ /usr/local/
 
 ENV TITLE="Automated Music Downloader (AMD)"
 ENV TITLESHORT="AMD"
-ENV VERSION="1.1.0"
+ENV VERSION="1.1.1"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV DOWNLOADMODE="wanted"
@@ -46,6 +46,17 @@ RUN \
 	echo "************ make directory ************" && \
 	mkdir -p "${XDG_CONFIG_HOME}/deemix"
 	
+RUN \
+	apt-get update -y && \
+	apt-get install -y --no-install-recommends \
+		libva-drm2 \
+		libva2 \
+		i965-va-driver && \
+	rm -rf \
+		/tmp/* \
+		/var/lib/apt/lists/* \
+		/var/tmp/*
+    
 # copy local files
 COPY root/ /
 
