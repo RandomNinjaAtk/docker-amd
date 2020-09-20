@@ -1,9 +1,14 @@
+ARG ffmpeg_tag=snapshot-ubuntu
+FROM jrottenberg/ffmpeg:${ffmpeg_tag} as ffmpeg
 FROM lsiobase/ubuntu:focal
 LABEL maintainer="RandomNinjaAtk"
 
+# Add files from ffmpeg
+COPY --from=ffmpeg /usr/local/ /usr/local/
+
 ENV TITLE="Automated Music Downloader (AMD)"
 ENV TITLESHORT="AMD"
-ENV VERSION="1.0.13"
+ENV VERSION="1.1.0"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV DOWNLOADMODE="wanted"
@@ -20,13 +25,17 @@ RUN \
 		flac \
 		opus-tools \
 		eyed3 \
-		ffmpeg \
 		python3 \
 		python3-pip && \
 	rm -rf \
 		/tmp/* \
 		/var/lib/apt/lists/* \
 		/var/tmp/* && \
+	echo "************ install updated ffmpeg ************" && \
+	chgrp users /usr/local/bin/ffmpeg && \
+ 	chgrp users /usr/local/bin/ffprobe && \
+	chmod g+x /usr/local/bin/ffmpeg && \
+	chmod g+x /usr/local/bin/ffprobe && \
 	echo "************ install python packages ************" && \
 	python3 -m pip install --no-cache-dir -U \
 		yq \
