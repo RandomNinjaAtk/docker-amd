@@ -53,6 +53,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e Concurrency=1` | Number of concurrent downloads |
 | `-e FORMAT=FLAC` | FLAC or MP3 or OPUS or AAC or ALAC |
 | `-e BITRATE=320` | FLAC -> OPUS/AAC/MP3 will be converted using this bitrate  (MP3 320/128 is native, not converted) |
+| `-e FORCECONVERT=false` | true = enabled :: This will convert lossy MP3 to desired target format (exluding FLAC/ALAC, ALAC will convert to AAC) |
 | `-e requirequality=false` | true = enabled :: Requires all downloaded files match target file extension (mp3 or flac) when enabled |
 | `-e MatchDistance=10` | Set as an integer, the higher the number, the more lienet it is. Example: A match score of 0 is a perfect match :: For more information, this score is produced using this function: [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance) |
 | `-e replaygain=true` | true = enabled :: Scans and analyzes files to add replaygain tags to song metadata |
@@ -89,6 +90,7 @@ docker create \
   -e Concurrency=1 \
   -e FORMAT=FLAC \
   -e BITRATE=320 \
+  -e FORCECONVERT=false \
   -e requirequality=false \
   -e MatchDistance=10 \
   -e replaygain=true \
@@ -132,6 +134,7 @@ services:
       - Concurrency=1
       - FORMAT=FLAC
       - BITRATE=320
+      - FORCECONVERT=false
       - requirequality=false
       - MatchDistance=10
       - replaygain=true
