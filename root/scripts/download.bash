@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.12"
+	echo "############################################ SCRIPT VERSION 1.5.13"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -503,7 +503,7 @@ Conversion () {
 				
 				if [ "$extension" == "m4a" ]; then
 					echo "$logheader :: CONVERSION :: $filename :: Tagging"
-					python3 /config/tag.py \
+					python3 /config/scripts/tag.py \
 						--file "${fname%.flac}.$extension" \
 						--songtitle "$songtitle" \
 						--songalbum "$songalbum" \
@@ -719,7 +719,7 @@ Conversion () {
 						
 						if [ "$extension" == "m4a" ]; then
 							echo "$logheader :: CONVERSION :: $filename :: Tagging"
-							python3 /config/tag.py \
+							python3 /config/scripts/tag.py \
 								--file "${fname%.mp3}.$extension" \
 								--songtitle "$songtitle" \
 								--songalbum "$songalbum" \
