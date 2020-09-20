@@ -19,9 +19,9 @@ class cli(deemix):
         self.set.settings["createAlbumFolder"] = False
         self.set.settings["saveArtworkArtist"] = True
         self.set.settings["queueConcurrency"] = 1
-        self.set.settings["jpegImageQuality"] = 90
-        self.set.settings["embeddedArtworkSize"] = 1800
-        self.set.settings["localArtworkSize"] = 1800
+        self.set.settings["jpegImageQuality"] = 100
+        self.set.settings["embeddedArtworkSize"] = 1200
+        self.set.settings["localArtworkSize"] = 1200
         self.set.settings["removeAlbumVersion"] = True
         self.set.settings["syncedLyrics"] = True
         self.set.settings["coverImageTemplate"] = "folder"
