@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.11"
+	echo "############################################ SCRIPT VERSION 1.5.12"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -171,6 +171,18 @@ Configuration () {
 			echo "Audio: Download Bitrate: lossless"
 			quality="FLAC"
 		fi
+	fi
+	
+	if [ ! -z "$FORCECONVERT" ]; then
+		if [ $FORCECONVERT == true ]; then
+			echo "Audio: Force Convert: ENABLED"
+		else
+			echo "Audio: Force Convert: DISABLED"
+		fi
+	else
+		echo "Audio: Force Convert: DISABLED"
+		echo "WARNING: FORCECONVERT setting invalid, using default setting"
+		FORCECONVERT="false"
 	fi
 	
 	if [ "$DOWNLOADMODE" == "artist" ]; then
