@@ -8,7 +8,7 @@ COPY --from=ffmpeg /usr/local/ /usr/local/
 
 ENV TITLE="Automated Music Downloader (AMD)"
 ENV TITLESHORT="AMD"
-ENV VERSION="1.1.1"
+ENV VERSION="1.1.2"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV DOWNLOADMODE="wanted"
@@ -51,6 +51,7 @@ RUN \
 	apt-get install -y --no-install-recommends \
 		libva-drm2 \
 		libva2 \
+		libgomp1 \
 		i965-va-driver && \
 	rm -rf \
 		/tmp/* \
