@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.14"
+	echo "############################################ SCRIPT VERSION 1.5.15"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -935,6 +935,8 @@ ArtistMode () {
 			for id in ${!deezeralbumlistids[@]}; do
 				deezeralbumprocess=$(( $id + 1 ))
 				deezeralbumid="${deezeralbumlistids[$id]}"
+				albumreleasegroupmbzid=""
+				albummbid=""
 				deezeralbumdata="$(curl -s "https://api.deezer.com/album/$deezeralbumid")"
 				deezeralbumurl="https://deezer.com/album/$deezeralbumid"
 				deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
@@ -1189,7 +1191,7 @@ WantedMode () {
 
 						for id in "${!lidarralbumdrecordids[@]}"; do
 							ablumrecordreleaseid=${lidarralbumdrecordids[$id]}
-							albummbid="$ablumrecordreleaseid"
+							albummbid=""
 							ablumrecordreleasedata=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.foreignReleaseId==\"$ablumrecordreleaseid\")")
 							albumtitle="$(echo "$ablumrecordreleasedata" | jq -r '.title')"
 							albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')
@@ -1238,7 +1240,7 @@ WantedMode () {
 						if [ -z "$albumdeezerurl" ]; then
 							for id in "${!lidarralbumdrecordids[@]}"; do
 								ablumrecordreleaseid=${lidarralbumdrecordids[$id]}
-								albummbid="$ablumrecordreleaseid"
+								albummbid=""
 								ablumrecordreleasedata=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.foreignReleaseId==\"$ablumrecordreleaseid\")")
 								albumtitle="$(echo "$ablumrecordreleasedata" | jq -r '.title')"
 								albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')								
@@ -1317,6 +1319,7 @@ WantedMode () {
 					recordtitle=${lidarralbumdrecordids[$id]}
 					#recordtitle="$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .title")"
 					#recordmbrainzid=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .foreignReleaseId")
+					albummbid=""
 					albumtitle="$recordtitle"
 					albumtitlecleans="$(echo "$albumtitle" | sed -e 's/["”“]//g' -e 's/‐/ /g')"
 					albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
