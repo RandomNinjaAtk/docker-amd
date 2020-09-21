@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.13"
+	echo "############################################ SCRIPT VERSION 1.5.14"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -1173,6 +1173,11 @@ WantedMode () {
 		if [ -z "$albumdeezerurl" ]; then
 			
 			if [[ "$albumartistname" != "Various Artists" && "$SearchType" != "fuzzy" ]]; then
+				if [ -z "${albumartistlistlinkid}" ]; then
+					mbjson=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/artist/${albumartistmbzid}?inc=url-rels&fmt=json")
+					albumartistlistlinkid=($(echo "$mbjson" | jq -r '.relations | .[] | .url | select(.resource | contains("deezer")) | .resource' | sort -u | grep -o '[[:digit:]]*'))
+					sleep $MBRATELIMIT
+				fi
 				if [ ! -z "${albumartistlistlinkid}" ]; then
 					for id in ${!albumartistlistlinkid[@]}; do
 						currentprocess=$(( $id + 1 ))
