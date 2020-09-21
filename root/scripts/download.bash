@@ -12,9 +12,9 @@ Configuration () {
 	echo "kill -9 $processdownloadid"
 	echo ""
 	echo ""
-	sleep 2.
+	sleep 2
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.16"
+	echo "############################################ SCRIPT VERSION 1.5.17"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -1046,7 +1046,7 @@ WantedMode () {
 		lidarralbumdata=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/album?albumIds=${lidarralbumid}")
 		OLDIFS="$IFS"
 		IFS=$'\n'
-		lidarralbumdrecordids=($(echo "${lidarralbumdata}" | jq -r '.[] | .releases | .[] | .foreignReleaseId'))
+		lidarralbumdrecordids=($(echo "${lidarralbumdata}" | jq -r '.[] | .releases | sort_by(.trackCount) | reverse | .[].foreignReleaseId'))
 		IFS="$OLDIFS"
 		albumreleasegroupmbzid=$(echo "${lidarralbumdata}"| jq -r '.[] | .foreignAlbumId')
 		releases=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/release?release-group=$albumreleasegroupmbzid&inc=url-rels&fmt=json")
@@ -1201,7 +1201,7 @@ WantedMode () {
 							albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')
 							first=${albumtitle%% *}
 							firstlower=${first,,}
-							echo "$logheader :: Filtering out Titles not containing \"$first\""
+							echo "$logheader :: Filtering out Titles not containing \"$first\" and Track Count: $albumtrackcount"
 							DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.nb_tracks==$albumtrackcount) | .id" | wc -l)
 														
 							if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
@@ -1250,7 +1250,7 @@ WantedMode () {
 								albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')								
 								first=${albumtitle%% *}
 								firstlower=${first,,}
-								echo "$logheader :: Filtering out Titles not containing \"$first\""
+								echo "$logheader :: Filtering out Titles not containing \"$first\" and Track Count: $albumtrackcount"
 								DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.nb_tracks==$albumtrackcount) | .id" | wc -l)
 															
 								if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
