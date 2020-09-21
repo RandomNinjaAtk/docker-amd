@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2.
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.15"
+	echo "############################################ SCRIPT VERSION 1.5.16"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -73,7 +73,11 @@ Configuration () {
 			fi
 			echo "Musicbrainz Rate Limit: $MBRATELIMIT (Queries Per Second)"
 		else
-			echo "Musicbrainz Rate Limit: $MBRATELIMIT (Queries Per Second)"
+			if [ "$MBRATELIMIT" == "101" ]; then
+				echo "Musicbrainz Rate Limit: DISABLED"
+			else
+				echo "Musicbrainz Rate Limit: $MBRATELIMIT (Queries Per Second)"
+			fi
 			MBRATELIMIT="0$(echo $(( 100 * 1 / $MBRATELIMIT )) | sed 's/..$/.&/')"
 		fi
 	fi
