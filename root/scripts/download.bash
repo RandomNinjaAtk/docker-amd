@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.22"
+	log "####### SCRIPT VERSION 1.5.23"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -974,21 +974,61 @@ ArtistMode () {
 					if [ "${deezeralbumtype^^}" != "SINGLE" ]; then
 						if [ "$deezeralbumexplicit" == "false" ]; then
 							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - * - $deezeralbumtitleclean (EXPLICIT) *" | read; then
-								log "$logheader :: Duplicate found..."
+								log "$logheader :: Duplicate EXPLICIT ${deezeralbumtype^^} found, skipping..."
 								logheader="$logheaderstart"
 								continue
+							fi
+							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - * - $deezeralbumtitleclean (Deluxe*(EXPLICIT) *" | read; then
+								log "$logheader :: Duplicate EXPLICIT ${deezeralbumtype^^} Deluxe found, skipping..."
+								logheader="$logheaderstart"
+								continue
+							fi
+							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - * - $deezeralbumtitleclean (CLEAN) *" | read; then
+								log "$logheader :: Duplicate CLEAN ${deezeralbumtype^^} found, skipping..."
+								logheader="$logheaderstart"
+								continue
+							fi
+							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - * - $deezeralbumtitleclean (Deluxe*(CLEAN) *" | read; then
+								log "$logheader :: Duplicate CLEAN ${deezeralbumtype^^} Deluxe found, skipping..."
+								logheader="$logheaderstart"
+								continue
+							fi
+						fi
+						if [ "$deezeralbumexplicit" == "true" ]; then
+							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean (EXPLICIT) *" | read; then
+								log "$logheader :: Duplicate EXPLICIT ${deezeralbumtype^^} $deezeralbumyear found, skipping..."
+								logheader="$logheaderstart"
+								continue
+							fi
+							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - * - $deezeralbumtitleclean (Deluxe*(EXPLICIT) *" | read; then
+								log "$logheader :: Duplicate EXPLICIT ${deezeralbumtype^^} Deluxe found, skipping..."
+								logheader="$logheaderstart"
+								continue
+							fi
+							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - * - $deezeralbumtitleclean (CLEAN) *" | read; then
+								log "$logheader :: Duplicate CLEAN ${deezeralbumtype^^} found, skipping..."
+								find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - * - $deezeralbumtitleclean (CLEAN) *" -exec rm -rf "{}" \; &> /dev/null
+								PlexNotification "$LidArtistPath"
 							fi
 						fi
 					fi
 					if [ "${deezeralbumtype^^}" == "SINGLE" ]; then
 						if [ "$deezeralbumexplicit" == "false" ]; then
 							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - * - $deezeralbumtitleclean (EXPLICIT) *" | read; then
-								log "$logheader :: Duplicate Explicit Album already downloaded, skipping..."
+								log "$logheader :: Duplicate EXPLICIT SINGLE already downloaded, skipping..."
+								logheader="$logheaderstart"
+								continue
+							fi
+						fi
+						if [ "$deezeralbumexplicit" == "true" ]; then
+							if find "$LidArtistPath" -iname "$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean (EXPLICIT) *" | read; then
+								log "$logheader :: Duplicate EXPLICIT SINGLE already downloaded, skipping..."
 								logheader="$logheaderstart"
 								continue
 							fi
 						fi
 					fi
+					
 					if find "$LidArtistPath" -iname "* ($deezeralbumid)" | read; then
 						log "$logheader :: Alaready Downloaded..."
 						logheader="$logheaderstart"
