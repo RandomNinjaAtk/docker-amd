@@ -14,7 +14,7 @@ Configuration () {
 	echo ""
 	sleep 2
 	echo "############################################ $TITLE"
-	echo "############################################ SCRIPT VERSION 1.5.17"
+	echo "############################################ SCRIPT VERSION 1.5.18"
 	echo "############################################ DOCKER VERSION $VERSION"
 	echo "############################################ CONFIGURATION VERIFICATION"
 	error=0
@@ -1320,11 +1320,11 @@ WantedMode () {
 				echo "$logheader :: ERROR :: Fallback to fuzzy search..."
 				echo "$logheader :: FUZZY SEARCHING..."
 				for id in "${!lidarralbumdrecordids[@]}"; do
-					recordtitle=${lidarralbumdrecordids[$id]}
-					#recordtitle="$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .title")"
-					#recordmbrainzid=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.id==$recordid) | .foreignReleaseId")
+					ablumrecordreleaseid=${lidarralbumdrecordids[$id]}
+					ablumrecordreleasedata=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.foreignReleaseId==\"$ablumrecordreleaseid\")")
+					albumtitle="$(echo "$ablumrecordreleasedata" | jq -r '.title')"
+					albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')	
 					albummbid=""
-					albumtitle="$recordtitle"
 					albumtitlecleans="$(echo "$albumtitle" | sed -e 's/["”“]//g' -e 's/‐/ /g')"
 					albumclean="$(echo "$albumtitle" | sed -e 's/[^[:alnum:]\ ]//g' -e 's/[\\/:\*\?"”“<>\|\x01-\x1F\x7F]//g')"
 					albumtitlesearch="$(jq -R -r @uri <<<"${albumtitlecleans}")"
