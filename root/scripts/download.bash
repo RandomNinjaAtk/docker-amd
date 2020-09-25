@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.20"
+	log "####### SCRIPT VERSION 1.5.21"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -482,7 +482,7 @@ Conversion () {
 				
 				
 				if [ "${FORMAT}" == "OPUS" ]; then
-					if opusenc --bitrate $BITRATE --vbr "$fname" "${fname%.flac}.temp.$extension"; then
+					if opusenc --bitrate $BITRATE --hard-cbr "$fname" "${fname%.flac}.temp.$extension"; then
 						converterror=0
 					else
 						converterror=1
@@ -695,7 +695,7 @@ Conversion () {
 						fi
 						
 						if [ "${FORMAT}" == "OPUS" ]; then
-							if opusenc --bitrate $BITRATE --vbr "$fname" "${fname%.mp3}.temp.$extension"; then
+							if opusenc --bitrate $BITRATE --hard-cbr "$fname" "${fname%.mp3}.temp.$extension"; then
 								converterror=0
 							else
 								converterror=1
