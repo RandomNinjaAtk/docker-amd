@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.21"
+	log "####### SCRIPT VERSION 1.5.22"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -834,6 +834,13 @@ LidarrList () {
 }
 
 ArtistAlbumList () {
+	touch -d "168 hours ago" /config/cache/cache-info-check
+	if find /config/cache/artists/$artistid -type f -iname "checked" -not -newer "/config/cache/cache-info-check" | read; then
+		rm /config/cache/artists/$artistid/checked 
+	else
+		log "$logheader :: Cached info good"
+	fi
+	rm /config/cache/cache-info-check
 
 	if [ ! -f /config/cache/artists/$artistid/checked ]; then
 		albumcount="$(python3 /config/scripts/artist_discograpy.py "$artistid" | sort -u | wc -l)"
