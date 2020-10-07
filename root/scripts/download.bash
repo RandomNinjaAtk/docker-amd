@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.23"
+	log "####### SCRIPT VERSION 1.5.24"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -205,6 +205,16 @@ Configuration () {
 			fi
 		done
 		
+		if [ ! -z "$ALBUM_TYPE_FILTER" ]; then
+			ALBUM_FILTER=true
+			log "Audio: Album Type Filter: ENABLED"
+			log "Audio: Filtering: $ALBUM_TYPE_FILTER"		
+		else
+			ALBUM_FILTER=false
+			log "Audio: Album Type Filter: DISABLED"
+		fi
+	
+		
 		if [ "$NOTIFYPLEX" == "true" ]; then
 			log "Audio: Plex Library Notification: ENABLED"
 			plexlibraries="$(curl -s "$PLEXURL/library/sections?X-Plex-Token=$PLEXTOKEN" | xq .)"
@@ -307,6 +317,24 @@ Configuration () {
 	fi
 	amount=1000000000
 	sleep 2.5
+}
+
+AlbumFilter () {
+
+	IFS=', ' read -r -a filters <<< "$ALBUM_TYPE_FILTER"
+	for filter in "${filters[@]}"
+	do
+		if [ "$filter" == "${deezeralbumtype^^}" ]; then
+			filtermatch=true
+			filtertype="$filter"
+			break
+		else
+			filtermatch=false
+			filtertype=""
+			continue
+		fi
+	done
+
 }
 
 Conversion () {
@@ -970,6 +998,23 @@ ArtistMode () {
 					logheader="$logheaderstart"
 					continue
 				fi
+				
+				if [ $ALBUM_FILTER == true ]; then
+					AlbumFilter
+
+					if [ $filtermatch == true ]; then
+						log "$logheader :: Album Type matched unwanted filter "$filtertype", skipping..."
+						if [ ! -d /config/logs/filtered ]; then
+							mkdir -p /config/logs/filtered
+						fi
+						if [ ! -f /config/logs/filtered/$deezeralbumid ]; then
+							touch /config/logs/filtered/$deezeralbumid
+						fi
+						logheader="$logheaderstart"
+						continue
+					fi
+				fi
+
 				if [ -d "$LidArtistPath" ]; then
 					if [ "${deezeralbumtype^^}" != "SINGLE" ]; then
 						if [ "$deezeralbumexplicit" == "false" ]; then
