@@ -69,6 +69,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e PLEXURL=http://x.x.x.x:32400` | ONLY used if NOTIFYPLEX is enabled... |
 | `-e PLEXTOKEN=plextoken` | ONLY used if NOTIFYPLEX is enabled... |
 | `-e ALBUM_TYPE_FILTER=COMPILE` | Filter Types: COMPILE, SINGLE, ALBUM, EP (this is a ", " separated list of Album Types to skip) (Applicable to artist mode only) |
+| `-e POSTPROCESSTHREADS=1` | Controls number of threads used for Format conversion and replaygain tagging |
 
 
 ## Usage
@@ -108,6 +109,7 @@ docker create \
   -e PLEXURL=http://x.x.x.x:8686 \
   -e PLEXTOKEN=plextoken \
   -e ALBUM_TYPE_FILTER=COMPILE \
+  -e POSTPROCESSTHREADS=1 \
   --restart unless-stopped \
   randomninjaatk/amd 
 ```
@@ -153,6 +155,7 @@ services:
       - PLEXURL=http://x.x.x.x:8686
       - PLEXTOKEN=plextoken
       - ALBUM_TYPE_FILTER=COMPILE
+      - POSTPROCESSTHREADS=1
     restart: unless-stopped
 ```
 
