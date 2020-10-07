@@ -114,10 +114,11 @@ Configuration () {
 
 	if [ ! -z "$Concurrency" ]; then
 		log "Audio: Concurrency: $Concurrency"
-		sed -i "s%queueConcurrency\"] = 1%queueConcurrency\"] = $Concurrency%g" "/config/scripts/dlclient.py"
+		sed -i "s%CONCURRENT_DOWNLOADS%$Concurrency%g" "/config/scripts/dlclient.py"
 	else
 		log "WARNING: Concurrency setting invalid, defaulting to: 1"
 		Concurrency="1"
+		sed -i "s%CONCURRENT_DOWNLOADS%$Concurrency%g" "/config/scripts/dlclient.py"
 	fi
 	
 	if [ ! -z "$FORMAT" ]; then
