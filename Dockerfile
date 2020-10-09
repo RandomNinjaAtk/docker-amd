@@ -8,7 +8,7 @@ COPY --from=ffmpeg /usr/local/ /usr/local/
 
 ENV TITLE="Automated Music Downloader (AMD)"
 ENV TITLESHORT="AMD"
-ENV VERSION="1.1.2"
+ENV VERSION="1.1.3"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV DOWNLOADMODE="wanted"
@@ -23,7 +23,6 @@ RUN \
 		jq \
 		mp3val \
 		flac \
-		opus-tools \
 		eyed3 \
 		python3 \
 		python3-pip && \
@@ -60,6 +59,10 @@ RUN \
     
 # copy local files
 COPY root/ /
+
+RUN \
+	echo "************ install updated opus-tools ************" && \
+	bash /opus.bash
 
 # set work directory
 WORKDIR /config
