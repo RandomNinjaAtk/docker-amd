@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.26"
+	log "####### SCRIPT VERSION 1.5.27"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -196,6 +196,16 @@ Configuration () {
 		POSTPROCESSTHREADS=1
 		log "WARNING: POSTPROCESSTHREADS setting invalid, defaulting to: 1"
 		log "Audio: Number of Post Process Threads: $POSTPROCESSTHREADS"
+	fi
+	
+	if [ ! -z "$EMBEDDED_COVER_QUALITY" ]; then
+		log "Audio: Embedded Cover Quality: $EMBEDDED_COVER_QUALITY (%)"
+		sed -i "s%EMBEDDED_COVER_QUALITY%$EMBEDDED_COVER_QUALITY%g" "/config/scripts/dlclient.py"
+	else
+		EMBEDDED_COVER_QUALITY=80
+		log "WARNING: EMBEDDED_COVER_QUALITY setting invalid, defaulting to: 80"
+		log "Audio: Embedded Cover Quality: $EMBEDDED_COVER_QUALITY (%)"
+		sed -i "s%EMBEDDED_COVER_QUALITY%$EMBEDDED_COVER_QUALITY%g" "/config/scripts/dlclient.py"
 	fi
 	
 	if [ "$DOWNLOADMODE" == "artist" ]; then
@@ -1054,6 +1064,7 @@ ArtistMode () {
 				deezeralbumtitleclean="$(echo "$deezeralbumtitle" | sed -e "s%[^[:alpha:][:digit:]._()' -]% %g" -e "s/  */ /g")"
 				deezeralbumartistid="$(echo "$deezeralbumdata" | jq -r ".artist.id" | head -n 1)"
 				deezeralbumdate="$(echo "$deezeralbumdata" | jq -r ".release_date")"
+				deezeralbumimage="$(echo "$deezeralbumdata" | jq -r ".cover_xl")"
 				deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
 				deezeralbumexplicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
 				if [ "$deezeralbumexplicit" == "true" ]; then 
@@ -1182,6 +1193,21 @@ ArtistMode () {
 				TagFix
 				Conversion
 				AddReplaygainTags
+				
+				if [ ! -f /downloads-amd/amd/dlclient/temp-folder.jpg ]; then
+					albumimage=$(echo "$deezeralbumimage" | sed 's%80-0-0.jpg%100-0-0.jpg%g')
+					curl -s "$albumimage" -o /downloads-amd/amd/dlclient/temp-folder.jpg
+				fi
+				
+				# remove low quality embedded iamge and replace with high quality local image
+				if [ -f /downloads-amd/amd/dlclient/temp-folder.jpg ]; then
+					if [ -f /downloads-amd/amd/dlclient/folder.jpg ]; then 
+						rm /downloads-amd/amd/dlclient/folder.jpg
+						mv /downloads-amd/amd/dlclient/temp-folder.jpg /downloads-amd/amd/dlclient/folder.jpg
+					else
+						mv /downloads-amd/amd/dlclient/temp-folder.jpg /downloads-amd/amd/dlclient/folder.jpg
+					fi
+				fi
 
 				if [ ! -d "$LidArtistPath/$albumfolder" ]; then
 					mkdir -p "$LidArtistPath/$albumfolder"
@@ -1746,6 +1772,23 @@ WantedMode () {
 		TagFix
 		Conversion
 		AddReplaygainTags
+		
+		deezeralbumimage="$(echo "$deezeralbumdata" | jq -r ".cover_xl")"
+		
+		if [ ! -f /downloads-amd/amd/dlclient/temp-folder.jpg ]; then
+			albumimage=$(echo "$deezeralbumimage" | sed 's%80-0-0.jpg%100-0-0.jpg%g')
+			curl -s "$albumimage" -o /downloads-amd/amd/dlclient/temp-folder.jpg
+		fi
+		
+		# remove low quality embedded iamge and replace with high quality local image
+		if [ -f /downloads-amd/amd/dlclient/temp-folder.jpg ]; then
+			if [ -f /downloads-amd/amd/dlclient/folder.jpg ]; then 
+				rm /downloads-amd/amd/dlclient/folder.jpg
+				mv /downloads-amd/amd/dlclient/temp-folder.jpg /downloads-amd/amd/dlclient/folder.jpg
+			else
+				mv /downloads-amd/amd/dlclient/temp-folder.jpg /downloads-amd/amd/dlclient/folder.jpg
+			fi
+		fi
 
 		if [ ! -d "$DOWNLOADS/amd/import" ]; then
 			mkdir -p "$DOWNLOADS/amd/import"
