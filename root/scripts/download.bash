@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.27"
+	log "####### SCRIPT VERSION 1.5.28"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1007,6 +1007,8 @@ ArtistMode () {
 	wantit=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/Artist/")
 	wantedtotal=$(echo "${wantit}"|jq -r '.[].sortName' | wc -l)
 	MBArtistID=($(echo "${wantit}" | jq -r ".[].foreignArtistId"))
+	variousartistname="$(echo "${wantit}" | jq -r '.[] | select(.foreignArtistId=="89ad4ac3-39f7-470e-963a-56509c546377") | .artistName')"
+	variousartistpath="$(echo "${wantit}" | jq -r '.[] | select(.foreignArtistId=="89ad4ac3-39f7-470e-963a-56509c546377") | .path')"
 	for id in ${!MBArtistID[@]}; do
 		artistnumber=$(( $id + 1 ))
 		mbid="${MBArtistID[$id]}"
@@ -1047,8 +1049,8 @@ ArtistMode () {
 			artistid="$DeezerArtistID"
 			ArtistAlbumList
 			albumlistdata=$(jq -s '.' /config/cache/artists/$artistid/albums/*.json)
-			deezeralbumlistcount="$(echo "$albumlistdata" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[] | select(.artist.id==$artistid) | .id" | wc -l)"
-			deezeralbumlistids=($(echo "$albumlistdata" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[] | select(.artist.id==$artistid) | .id"))
+			deezeralbumlistcount="$(echo "$albumlistdata" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[].id" | wc -l)"
+			deezeralbumlistids=($(echo "$albumlistdata" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[].id"))
 			logheader="$logheader :: $urlnumber of $deezerartisturlcount"
 			logheaderstart="$logheader"
 			log "$logheader"
@@ -1073,14 +1075,28 @@ ArtistMode () {
 					lyrictype="CLEAN"
 				fi
 				deezeralbumyear="${deezeralbumdate:0:4}"
-				albumfolder="$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean ($lyrictype) ($deezeralbumid)"
 				logheader="$logheader :: $deezeralbumprocess of $deezeralbumlistcount :: PROCESSING :: ${deezeralbumtype^^} :: $deezeralbumyear :: $lyrictype :: $deezeralbumtitle"
 				log "$logheader"
 				if [ $deezeralbumartistid != $DeezerArtistID ]; then
-					log "$logheader :: Arist ID does not match, skipping..."
-					logheader="$logheaderstart"
-					continue
+					if [ $deezeralbumartistid == 5080 ] && [ ! -z "$variousartistpath" ]; then 
+						originalpath="$LidArtistPath"
+						originalLidArtistNameCap="$LidArtistNameCap"
+						originalLidArtistNameCapClean="$LidArtistNameCapClean"
+						originalalbumartistname="$albumartistname"
+						originalalalbumartistmbzid="$albumartistmbzid"
+						LidArtistPath="$variousartistpath"
+						LidArtistNameCap="$variousartistname"
+						LidArtistNameCapClean="$variousartistname"
+						albumartistname="$variousartistname"
+						albumartistmbzid="89ad4ac3-39f7-470e-963a-56509c546377"
+					else
+						log "$logheader :: Arist ID does not match, skipping..."
+						logheader="$logheaderstart"
+						continue
+					fi
 				fi
+				
+				albumfolder="$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean ($lyrictype) ($deezeralbumid)"
 				
 				if [ $ALBUM_FILTER == true ]; then
 					AlbumFilter
@@ -1218,6 +1234,14 @@ ArtistMode () {
 				chown -R abc:abc "$LidArtistPath/$albumfolder"
 				PlexNotification
 				logheader="$logheaderstart"
+				
+				if [ $deezeralbumartistid == 5080 ] && [ ! -z "$variousartistpath" ]; then 
+					LidArtistPath="$originalpath"
+					LidArtistNameCap="$originalLidArtistNameCap"
+					LidArtistNameCapClean="$originalLidArtistNameCapClean"
+					albumartistname="$originalalbumartistname"
+					albumartistmbzid="$originalalalbumartistmbzid"
+				fi
 			done
 			logheader="$logheaderartiststart"
 		done
