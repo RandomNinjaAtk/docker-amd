@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.28"
+	log "####### SCRIPT VERSION 1.5.29"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1023,6 +1023,11 @@ ArtistMode () {
 		deezerartisturl=""
 		deezerartisturl=($(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .links | .[] | select(.name==\"deezer\") | .url"))
 		deezerartisturlcount=$(echo "${wantit}" | jq -r ".[] | select(.foreignArtistId==\"${mbid}\") | .links | .[] | select(.name==\"deezer\") | .url" | wc -l)
+		originalpath="$LidArtistPath"
+		originalLidArtistNameCap="$LidArtistNameCap"
+		originalLidArtistNameCapClean="$LidArtistNameCapClean"
+		originalalbumartistname="$albumartistname"
+		originalalalbumartistmbzid="$albumartistmbzid"
 		logheader=""
 		logheader="$artistnumber of $wantedtotal :: $LidArtistNameCap"
 		logheaderartiststart="$logheader"
@@ -1032,12 +1037,7 @@ ArtistMode () {
 			log "$logheader :: ERROR :: Deezer Artist ID not found..."
 			continue
 		fi
-		
-		if [ -f "/config/cache/$LidArtistNameCapClean-$mbid-artist-complete" ]; then
-			log "$logheader :: Already Archived, skipping..."
-			continue
-		fi
-		
+
 		for url in ${!deezerartisturl[@]}; do
 			if [ ! -d "$pathbasename" ]; then
 				echo "ERROR: Path not found, add missing volume that matches Lidarr"
@@ -1077,13 +1077,15 @@ ArtistMode () {
 				deezeralbumyear="${deezeralbumdate:0:4}"
 				logheader="$logheader :: $deezeralbumprocess of $deezeralbumlistcount :: PROCESSING :: ${deezeralbumtype^^} :: $deezeralbumyear :: $lyrictype :: $deezeralbumtitle"
 				log "$logheader"
+				
+				LidArtistPath="$originalpath"
+				LidArtistNameCap="$originalLidArtistNameCap"
+				LidArtistNameCapClean="$originalLidArtistNameCapClean"
+				albumartistname="$originalalbumartistname"
+				albumartistmbzid="$originalalalbumartistmbzid"
+				
 				if [ $deezeralbumartistid != $DeezerArtistID ]; then
-					if [ $deezeralbumartistid == 5080 ] && [ ! -z "$variousartistpath" ]; then 
-						originalpath="$LidArtistPath"
-						originalLidArtistNameCap="$LidArtistNameCap"
-						originalLidArtistNameCapClean="$LidArtistNameCapClean"
-						originalalbumartistname="$albumartistname"
-						originalalalbumartistmbzid="$albumartistmbzid"
+					if [ $deezeralbumartistid == 5080 ] && [ ! -z "$variousartistpath" ]; then
 						LidArtistPath="$variousartistpath"
 						LidArtistNameCap="$variousartistname"
 						LidArtistNameCapClean="$variousartistname"
@@ -1097,6 +1099,11 @@ ArtistMode () {
 				fi
 				
 				albumfolder="$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean ($lyrictype) ($deezeralbumid)"
+				
+				if [ -f "$LidArtistPath/$albumfolder/errors.txt" ]; then
+					log "$logheader :: Existing Download found with errors, retrying..."
+					rm -rf "$LidArtistPath/$albumfolder"
+				fi
 				
 				if [ $ALBUM_FILTER == true ]; then
 					AlbumFilter
@@ -1234,14 +1241,6 @@ ArtistMode () {
 				chown -R abc:abc "$LidArtistPath/$albumfolder"
 				PlexNotification
 				logheader="$logheaderstart"
-				
-				if [ $deezeralbumartistid == 5080 ] && [ ! -z "$variousartistpath" ]; then 
-					LidArtistPath="$originalpath"
-					LidArtistNameCap="$originalLidArtistNameCap"
-					LidArtistNameCapClean="$originalLidArtistNameCapClean"
-					albumartistname="$originalalbumartistname"
-					albumartistmbzid="$originalalalbumartistmbzid"
-				fi
 			done
 			logheader="$logheaderartiststart"
 		done
