@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.29"
+	log "####### SCRIPT VERSION 1.5.30"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1188,19 +1188,19 @@ ArtistMode () {
 				fi
 				logheader="$logheader :: DOWNLOAD"
 				log "$logheader :: Sending \"$deezeralbumurl\" to download client..."
-				if python3 /config/scripts/dlclient.py -b $quality "$deezeralbumurl"; then
-					sleep 0.5
-					if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
-						DownloadQualityCheck
-					fi
-					if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
-						find "$DOWNLOADS"/amd/dlclient -type d -exec chmod $FolderPermissions {} \;
-						find "$DOWNLOADS"/amd/dlclient -type f -exec chmod $FilePermissions {} \;
-						chown -R abc:abc "$DOWNLOADS"/amd/dlclient
-					else
-						log "$logheader :: DOWNLOAD :: ERROR :: No files found"
-						continue
-					fi
+				python3 /config/scripts/dlclient.py -b $quality "$deezeralbumurl"
+				
+				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+					DownloadQualityCheck
+				fi
+				
+				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+					find "$DOWNLOADS"/amd/dlclient -type d -exec chmod $FolderPermissions {} \;
+					find "$DOWNLOADS"/amd/dlclient -type f -exec chmod $FilePermissions {} \;
+					chown -R abc:abc "$DOWNLOADS"/amd/dlclient
+				else
+					log "$logheader :: DOWNLOAD :: ERROR :: No files found"
+					continue
 				fi
 								
 				file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
@@ -1761,22 +1761,21 @@ WantedMode () {
 
 		if [ ! -d "$albumbimportfolder" ]; then
 			log "$logheader :: DOWNLOADING :: $deezeralbumtitle :: $albumdeezerurl..."
-			if python3 /config/scripts/dlclient.py -b $quality "$albumdeezerurl"; then
-				sleep 0.5
-				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
-					DownloadQualityCheck
-				fi
-				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
-					chmod $FilePermissions "$DOWNLOADS"/amd/dlclient/*
-					chown -R abc:abc "$DOWNLOADS"/amd/dlclient
-					log "$logheader :: DOWNLOAD :: success"
-					echo "$filelogheader :: $albumdeezerurl :: $albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder"  >> "/config/logs/download.log"
-				else
-					log "$logheader :: DOWNLOAD :: ERROR :: No files found"
-					echo "$albumartistname :: $albumreleasegroupmbzid :: $albumtitle"  >> "/config/logs/notfound.log"
-					echo "$filelogheader :: $albumdeezerurl :: $albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder"  >> "/config/logs/error.log"
-					continue
-				fi
+			python3 /config/scripts/dlclient.py -b $quality "$albumdeezerurl"
+			
+			if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+				DownloadQualityCheck
+			fi
+			if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+				chmod $FilePermissions "$DOWNLOADS"/amd/dlclient/*
+				chown -R abc:abc "$DOWNLOADS"/amd/dlclient
+				log "$logheader :: DOWNLOAD :: success"
+				echo "$filelogheader :: $albumdeezerurl :: $albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder"  >> "/config/logs/download.log"
+			else
+				log "$logheader :: DOWNLOAD :: ERROR :: No files found"
+				echo "$albumartistname :: $albumreleasegroupmbzid :: $albumtitle"  >> "/config/logs/notfound.log"
+				echo "$filelogheader :: $albumdeezerurl :: $albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder"  >> "/config/logs/error.log"
+				continue
 			fi
 
 			file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
