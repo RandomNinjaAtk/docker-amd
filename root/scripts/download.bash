@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.30"
+	log "####### SCRIPT VERSION 1.5.31"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1084,6 +1084,12 @@ ArtistMode () {
 				albumartistname="$originalalbumartistname"
 				albumartistmbzid="$originalalalbumartistmbzid"
 				
+				if [ -f /config/logs/downloads/$deezeralbumid ]; then
+					log "$logheader :: Album ($deezeralbumid) Already Downloaded..."
+					logheader="$logheaderstart"
+					continue
+				fi
+				
 				if [ $deezeralbumartistid != $DeezerArtistID ]; then
 					if [ $deezeralbumartistid == 5080 ] && [ ! -z "$variousartistpath" ]; then
 						LidArtistPath="$variousartistpath"
@@ -1241,6 +1247,14 @@ ArtistMode () {
 				chown -R abc:abc "$LidArtistPath/$albumfolder"
 				PlexNotification
 				logheader="$logheaderstart"
+				
+				if [ ! -d /config/logs/downloads ]; then
+					mkdir -p /config/logs/downloads
+				fi
+				
+				if [ ! -f /config/logs/downloads/$deezeralbumid ]; then
+					touch /config/logs/downloads/$deezeralbumid
+				fi
 			done
 			logheader="$logheaderartiststart"
 		done
