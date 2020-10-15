@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.31"
+	log "####### SCRIPT VERSION 1.5.32"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -897,7 +897,7 @@ DownloadQualityCheck () {
 AddReplaygainTags () {
 	if [ "$replaygain" == "true" ]; then
 		log "$logheader :: DOWNLOAD :: Adding Replaygain Tags using r128gain"
-		r128gain -r -a "$DOWNLOADS/amd/dlclient"
+		r128gain -r -a -c $POSTPROCESSTHREADS "$DOWNLOADS/amd/dlclient"
 	fi
 }
 
