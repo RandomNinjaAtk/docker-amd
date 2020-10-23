@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.32"
+	log "####### SCRIPT VERSION 1.5.33"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -612,10 +612,6 @@ MP3Convert () {
 		songisrc="null"
 	fi
 	if [ "$extension" = "m4a" ]; then
-		if [ "${FORMAT}" == "ALAC" ]; then
-			origoptions="$options"
-			options="-c:a libfdk_aac -b:a ${BITRATE}k -movflags faststart"
-		fi
 		tags="$(ffprobe -v quiet -print_format json -show_format "$fname" | jq -r '.[] | .tags')"
 		filelrc="${fname%.mp3}.lrc"
 		songtitle="$(echo "$tags" | jq -r ".title")"
@@ -766,10 +762,6 @@ MP3Convert () {
 		else
 			converterror=1
 		fi
-	fi
-	
-	if [ "${FORMAT}" == "ALAC" ]; then
-		options="$origoptions"
 	fi
 	
 	if [ "$converterror" == "1" ]; then
