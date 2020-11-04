@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.34"
+	log "####### SCRIPT VERSION 1.5.35"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -110,8 +110,6 @@ Configuration () {
 		error=1
 	fi
 
-	
-
 	if [ ! -z "$Concurrency" ]; then
 		log "Audio: Concurrency: $Concurrency"
 		sed -i "s%CONCURRENT_DOWNLOADS%$Concurrency%g" "/config/scripts/dlclient.py"
@@ -188,6 +186,18 @@ Configuration () {
 		log "Audio: Force Convert: DISABLED"
 		log "WARNING: FORCECONVERT setting invalid, using default setting"
 		FORCECONVERT="false"
+	fi
+	
+	if [ ! -z "$ENABLEPOSTPROCESSING" ]; then
+		if [ $ENABLEPOSTPROCESSING == true ]; then
+			log "Audio: Audio Post Processing: ENABLED"
+		else
+			log "Audio: Audio Post Processing: DISABLED"
+		fi
+	else
+		log "Audio: Audio Post Processing: ENABLED"
+		log "WARNING: ENABLEPOSTPROCESSING setting invalid, using default setting"
+		ENABLEPOSTPROCESSING="true"
 	fi
 
 	if [ ! -z "$POSTPROCESSTHREADS" ]; then
@@ -1210,9 +1220,11 @@ ArtistMode () {
 					fi
 				fi
 				
-				TagFix
-				Conversion
-				AddReplaygainTags
+				if [ $ENABLEPOSTPROCESSING == true ]; then
+					TagFix
+					Conversion
+					AddReplaygainTags
+				fi
 				
 				if [ ! -f /downloads-amd/amd/dlclient/temp-folder.jpg ]; then
 					albumimage=$(echo "$deezeralbumimage" | sed 's%80-0-0.jpg%100-0-0.jpg%g')
@@ -1795,10 +1807,12 @@ WantedMode () {
 		else
 			echo "$filelogheader :: $albumdeezerurl :: $albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder"  >> "/config/logs/download.log"
 		fi
-
-		TagFix
-		Conversion
-		AddReplaygainTags
+		
+		if [ $ENABLEPOSTPROCESSING == true ]; then
+			TagFix
+			Conversion
+			AddReplaygainTags
+		fi
 		
 		deezeralbumimage="$(echo "$deezeralbumdata" | jq -r ".cover_xl")"
 		
