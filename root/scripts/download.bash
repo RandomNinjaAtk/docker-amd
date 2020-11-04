@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.33"
+	log "####### SCRIPT VERSION 1.5.34"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -332,7 +332,6 @@ Configuration () {
 	if [ $error = 1 ]; then
 		log "Please correct errors before attempting to run script again..."
 		log "Exiting..."
-		exit 1
 	fi
 	amount=1000000000
 	sleep 2.5
@@ -1968,7 +1967,11 @@ log () {
     echo $m_time" ":: $1
 }
 
-Configuration
+error=1
+until [ $error -eq 0 ]
+do
+	Configuration
+done
 CreateDownloadFolders
 SetFolderPermissions
 CleanupFailedImports
