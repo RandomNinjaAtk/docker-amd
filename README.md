@@ -54,6 +54,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e EMBEDDED_COVER_QUALITY=80` | Controls the quality of the cover image compression in percentage, 100 = no compression |
 | `-e FORMAT=FLAC` | FLAC or MP3 or OPUS or AAC or ALAC |
 | `-e BITRATE=320` | FLAC -> OPUS/AAC/MP3 will be converted using this bitrate  (MP3 320/128 is native, not converted) |
+| `-e ENABLEPOSTPROCESSING=true` | true = enabled :: enables or disables post processing processes as much as possible |
 | `-e FORCECONVERT=false` | true = enabled :: This will convert lossy MP3 to desired target format (exluding FLAC/ALAC, ALAC will convert to AAC) |
 | `-e requirequality=false` | true = enabled :: Requires all downloaded files match target file extension (mp3 or flac) when enabled |
 | `-e MatchDistance=10` | Set as an integer, the higher the number, the more lienet it is. Example: A match score of 0 is a perfect match :: For more information, this score is produced using this function: [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance) |
@@ -95,6 +96,7 @@ docker create \
   -e EMBEDDED_COVER_QUALITY=80 \
   -e FORMAT=FLAC \
   -e BITRATE=320 \
+  -e ENABLEPOSTPROCESSING=true \
   -e FORCECONVERT=false \
   -e requirequality=false \
   -e MatchDistance=10 \
@@ -142,6 +144,7 @@ services:
       - EMBEDDED_COVER_QUALITY=80
       - FORMAT=FLAC
       - BITRATE=320
+      - ENABLEPOSTPROCESSING=true
       - FORCECONVERT=false
       - requirequality=false
       - MatchDistance=10
