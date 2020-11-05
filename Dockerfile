@@ -1,6 +1,6 @@
 ARG ffmpeg_tag=snapshot-ubuntu
 FROM jrottenberg/ffmpeg:${ffmpeg_tag} as ffmpeg
-FROM lsiobase/ubuntu:focal
+FROM lsiobase/ubuntu:a7da6fde-ls13
 LABEL maintainer="RandomNinjaAtk"
 
 # Add files from ffmpeg
