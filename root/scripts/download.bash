@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.35"
+	log "####### SCRIPT VERSION 1.5.36"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1196,7 +1196,7 @@ ArtistMode () {
 				logheader="$logheader :: DOWNLOAD"
 				log "$logheader :: Sending \"$deezeralbumurl\" to download client..."
 				python3 /config/scripts/dlclient.py -b $quality "$deezeralbumurl"
-				
+				rm -rf /tmp/deemix-imgs/*
 				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
 					DownloadQualityCheck
 				fi
@@ -1779,7 +1779,7 @@ WantedMode () {
 		if [ ! -d "$albumbimportfolder" ]; then
 			log "$logheader :: DOWNLOADING :: $deezeralbumtitle :: $albumdeezerurl..."
 			python3 /config/scripts/dlclient.py -b $quality "$albumdeezerurl"
-			
+			rm -rf /tmp/deemix-imgs/*
 			if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
 				DownloadQualityCheck
 			fi
