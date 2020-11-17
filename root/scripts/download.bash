@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.37"
+	log "####### SCRIPT VERSION 1.5.38"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1061,7 +1061,7 @@ ArtistMode () {
 				deezeralbumid="${deezeralbumlistids[$id]}"
 				albumreleasegroupmbzid=""
 				albummbid=""
-				deezeralbumdata="$(cat /config/cache/artists/$artistid/albums/$deezeralbumid.json")"
+				deezeralbumdata="$(cat "/config/cache/artists/$artistid/albums/$deezeralbumid.json")"
 				deezeralbumurl="https://deezer.com/album/$deezeralbumid"
 				deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
 				deezeralbumtitleclean="$(echo "$deezeralbumtitle" | sed -e "s%[^[:alpha:][:digit:]._()' -]% %g" -e "s/  */ /g")"
