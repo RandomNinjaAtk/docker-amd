@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.36"
+	log "####### SCRIPT VERSION 1.5.37"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1061,7 +1061,7 @@ ArtistMode () {
 				deezeralbumid="${deezeralbumlistids[$id]}"
 				albumreleasegroupmbzid=""
 				albummbid=""
-				deezeralbumdata="$(curl -s "https://api.deezer.com/album/$deezeralbumid")"
+				deezeralbumdata="$(cat /config/cache/artists/$artistid/albums/$deezeralbumid.json")"
 				deezeralbumurl="https://deezer.com/album/$deezeralbumid"
 				deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
 				deezeralbumtitleclean="$(echo "$deezeralbumtitle" | sed -e "s%[^[:alpha:][:digit:]._()' -]% %g" -e "s/  */ /g")"
@@ -1091,8 +1091,8 @@ ArtistMode () {
 					continue
 				fi
 				
-				if [ $deezeralbumartistid != $DeezerArtistID ]; then
-					if [ $deezeralbumartistid == 5080 ] && [ ! -z "$variousartistpath" ]; then
+				if [ "$deezeralbumartistid" != "$artistid" ]; then
+					if [ "$deezeralbumartistid" == "5080" ] && [ ! -z "$variousartistpath" ]; then
 						LidArtistPath="$variousartistpath"
 						LidArtistNameCap="$variousartistname"
 						LidArtistNameCapClean="$variousartistname"
