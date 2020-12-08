@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Use manifest-tool to create the manifest, given the experimental
+# "docker manifest" command isn't available yet on Docker Hub.
+
+#curl -Lo manifest-tool https://github.com/estesp/manifest-tool/releases/download/v1.0.0/manifest-tool-linux-arm64
+#chmod +x manifest-tool
+#docker manifest annotate jstrader/alpine-int-openvpn:latest jstrader/alpine-int-openvpn:arm32v7 --arch arm --variant v7
+#docker manifest annotate jstrader/alpine-int-openvpn:latest jstrader/alpine-int-openvpn:arm64v8 --arch arm --variant v8
+#docker manifest create jstrader/alpine-int-openvpn:latest --amend jstrader/alpine-int-openvpn:amd64 --amend jstrader/alpine-int-openvpn:arm32v7 --amend jstrader/alpine-int-openvpn:arm64v8
+#docker manifest inspect jstrader/alpine-int-openvpn:latest
+#./manifest-tool push from-spec multi-arch-manifest.yaml
+
+#!/bin/bash
+
+# Autobuild the Image on Docker Hub with advanced options
+# https://docs.docker.com/docker-hub/builds/advanced/
+
+# if the host is not equal to the building system architecture, set the image arch with manifest correctly on docker hub.
+
+set -e
+
+#IMAGE_OS=$(uname | tr '[:upper:]' '[:lower:]')
+IMAGE_OS="linux"
+HOST_ARCH=$(uname -m)
+HOST_ARCH_ALIAS=$([[ "${HOST_ARCH}" == "x86_64" ]] && echo "amd64" || echo "${HOST_ARCH}")
+BUILD_ARCH=$(echo "${DOCKERFILE_PATH}" | cut -d '.' -f 2)
+BUILD_ARCH=$([[ "${BUILD_ARCH}" == *\/* ]] && echo "${BUILD_ARCH}" | rev | cut -d '/' -f 1 | rev || echo "${BUILD_ARCH}")
+QEMU_USER_STATIC_ARCH=$([[ "${BUILD_ARCH}" == "armhf" ]] && echo "${BUILD_ARCH::-2}" || echo "${BUILD_ARCH}")
+PLATFORMS_ARCH=$([[ "${QEMU_USER_STATIC_ARCH}" == "arm" ]] && echo "${IMAGE_OS}/${QEMU_USER_STATIC_ARCH},${IMAGE_OS}/${QEMU_USER_STATIC_ARCH}64,${IMAGE_OS}/${HOST_ARCH_ALIAS}" || echo "${IMAGE_OS}/${QEMU_USER_STATIC_ARCH}")
+
+echo "PLATFORMS-ARCH: ${PLATFORMS_ARCH}"
+
+if [[ "${HOST_ARCH}" == "${QEMU_USER_STATIC_ARCH}"* || "${BUILD_ARCH}" == "Dockerfile"  ]]; then
+    echo "Building ${BUILD_ARCH} image natively; No manifest needed for current arch."
+    exit 0
+else
+    # Manifest
+
+    # docker manifest: https://docs.docker.com/engine/reference/commandline/manifest/
+    echo "docker manifest (not working with autobuild on docker hub)"
+    #docker manifest create "${IMAGE_NAME}" "${IMAGE_NAME}"
+    #docker manifest annotate "${IMAGE_NAME}" "${IMAGE_NAME}" --os "${IMAGE_OS}" --arch "${QEMU_USER_STATIC_ARCH}"
+    #docker manifest push "${IMAGE_NAME}"
+
+    # manifest-tool: https://github.com/estesp/manifest-tool
+    echo "manifest-tool"
+    # prerelease:
+    #MANIFEST_TOOL_VERSION=$(curl -s https://api.github.com/repos/estesp/manifest-tool/tags  | grep 'name.*v[0-9]' | head -n 1 | cut -d '"' -f 4)
+    # release:
+    MANIFEST_TOOL_VERSION=$(curl -s https://api.github.com/repos/estesp/manifest-tool/releases/latest | grep 'tag_name' | cut -d\" -f4)
+    curl -L https://github.com/estesp/manifest-tool/releases/download/$MANIFEST_TOOL_VERSION/manifest-tool-$IMAGE_OS-$HOST_ARCH_ALIAS -o manifest-tool
+    chmod +x manifest-tool
+    #./manifest-tool push from-args --platforms ${PLATFORMS_ARCH} --template ${IMAGE_NAME} --target ${IMAGE_NAME}
+    ./manifest-tool push from-spec manifest.yaml
+fi

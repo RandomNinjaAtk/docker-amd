@@ -1,0 +1,16 @@
+image: jstrader/amd_multi_test:latest
+manifests:
+  - image: jstrader/amd_multi_test:amd64
+    platform:
+      architecture: amd64
+      os: linux
+  - image: jstrader/amd_multi_test:arm32v7
+    platform:
+      architecture: arm
+      os: linux
+      variant: v7
+  - image: jstrader/amd_multi_test:arm64v8
+    platform:
+      architecture: arm64
+      os: linux
+      variant: v8
