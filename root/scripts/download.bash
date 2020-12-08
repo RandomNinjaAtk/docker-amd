@@ -112,11 +112,11 @@ Configuration () {
 
 	if [ ! -z "$Concurrency" ]; then
 		log "Audio: Concurrency: $Concurrency"
-		sed -i "s%CONCURRENT_DOWNLOADS%$Concurrency%g" "/config/scripts/dlclient.py"
+		sed -i "s%CONCURRENT_DOWNLOADS%$Concurrency%g" "/scripts/dlclient.py"
 	else
 		log "WARNING: Concurrency setting invalid, defaulting to: 1"
 		Concurrency="1"
-		sed -i "s%CONCURRENT_DOWNLOADS%$Concurrency%g" "/config/scripts/dlclient.py"
+		sed -i "s%CONCURRENT_DOWNLOADS%$Concurrency%g" "/scripts/dlclient.py"
 	fi
 	
 	if [ ! -z "$FORMAT" ]; then
@@ -210,12 +210,12 @@ Configuration () {
 	
 	if [ ! -z "$EMBEDDED_COVER_QUALITY" ]; then
 		log "Audio: Embedded Cover Quality: $EMBEDDED_COVER_QUALITY (%)"
-		sed -i "s%EMBEDDED_COVER_QUALITY%$EMBEDDED_COVER_QUALITY%g" "/config/scripts/dlclient.py"
+		sed -i "s%EMBEDDED_COVER_QUALITY%$EMBEDDED_COVER_QUALITY%g" "/scripts/dlclient.py"
 	else
 		EMBEDDED_COVER_QUALITY=80
 		log "WARNING: EMBEDDED_COVER_QUALITY setting invalid, defaulting to: 80"
 		log "Audio: Embedded Cover Quality: $EMBEDDED_COVER_QUALITY (%)"
-		sed -i "s%EMBEDDED_COVER_QUALITY%$EMBEDDED_COVER_QUALITY%g" "/config/scripts/dlclient.py"
+		sed -i "s%EMBEDDED_COVER_QUALITY%$EMBEDDED_COVER_QUALITY%g" "/scripts/dlclient.py"
 	fi
 	
 	if [ "$DOWNLOADMODE" == "artist" ]; then
@@ -555,7 +555,7 @@ FlacConvert () {
 				
 	if [ "$extension" == "m4a" ]; then
 		log "$logheader :: CONVERSION :: $filename :: Tagging"
-		python3 /config/scripts/tag.py \
+		python3 /scripts/tag.py \
 			--file "${fname%.flac}.$extension" \
 			--songtitle "$songtitle" \
 			--songalbum "$songalbum" \
@@ -784,7 +784,7 @@ MP3Convert () {
 						
 	if [ "$extension" == "m4a" ]; then
 		log "$logheader :: CONVERSION :: $filename :: Tagging"
-		python3 /config/scripts/tag.py \
+		python3 /scripts/tag.py \
 			--file "${fname%.mp3}.$extension" \
 			--songtitle "$songtitle" \
 			--songalbum "$songalbum" \
@@ -827,7 +827,7 @@ MP3Convert () {
 Conversion () {
 	if [ "${FORMAT}" != "FLAC" ]; then
 		if [ $FORCECONVERT == true ]; then
-			converttrackcount=$(find /downloads-amd/amd/dlclient/ -iregex ".*/.*\.\(flac\|mp3\)" | wc -l)
+			converttrackcount=$(find /downloads-amd/amd/dlclient/ -regex ".*/.*\.\(flac\|mp3\)" | wc -l)
 		else
 			converttrackcount=$(find /downloads-amd/amd/dlclient/ -name "*.flac" | wc -l)
 		fi
@@ -904,43 +904,43 @@ AddReplaygainTags () {
 
 LidarrList () {
 	if [ -f "temp-lidarr-missing.json" ]; then
-		rm "/config/scripts/temp-lidarr-missing.json"
+		rm "/scripts/temp-lidarr-missing.json"
 	fi
 
-	if [ -f "/config/scripts/temp-lidarr-cutoff.json" ]; then
-		rm "/config/scripts/temp-lidarr-cutoff.json"
+	if [ -f "/scripts/temp-lidarr-cutoff.json" ]; then
+		rm "/scripts/temp-lidarr-cutoff.json"
 	fi
 
-	if [ -f "/config/scripts/lidarr-monitored-list.json" ]; then
-		rm "/config/scripts/lidarr-monitored-list.json"
+	if [ -f "/scripts/lidarr-monitored-list.json" ]; then
+		rm "/scripts/lidarr-monitored-list.json"
 	fi
 
 	if [[ "$LIST" == "missing" || "$LIST" == "both" ]]; then
 		log "Downloading missing list..."
-		curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/missing/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate" -o "/config/scripts/temp-lidarr-missing.json"
-		missingtotal=$(cat "/config/scripts/temp-lidarr-missing.json" | jq -r '.records | .[] | .id' | wc -l)
+		curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/missing/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate" -o "/scripts/temp-lidarr-missing.json"
+		missingtotal=$(cat "/scripts/temp-lidarr-missing.json" | jq -r '.records | .[] | .id' | wc -l)
 		log "FINDING MISSING ALBUMS: ${missingtotal} Found"
 	fi
 
 	if [[ "$LIST" == "cutoff" || "$LIST" == "both" ]]; then
 		log "Downloading cutoff list..."
-		curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/cutoff/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate" -o "/config/scripts/temp-lidarr-cutoff.json"
-		cuttofftotal=$(cat "/config/scripts/temp-lidarr-cutoff.json" | jq -r '.records | .[] | .id' | wc -l)
+		curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/cutoff/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate" -o "/scripts/temp-lidarr-cutoff.json"
+		cuttofftotal=$(cat "/scripts/temp-lidarr-cutoff.json" | jq -r '.records | .[] | .id' | wc -l)
 		log "FINDING CUTOFF ALBUMS: ${cuttofftotal} Found"
 	fi
-	jq -s '.[]' /config/scripts/temp-lidarr-*.json > "/config/scripts/lidarr-monitored-list.json"
-	missinglistalbumids=($(cat "/config/scripts/lidarr-monitored-list.json" | jq -r '.records | .[] | .id'))
-	missinglisttotal=$(cat "/config/scripts/lidarr-monitored-list.json" | jq -r '.records | .[] | .id' | wc -l)
-	if [ -f "/config/scripts/temp-lidarr-missing.json" ]; then
-		rm "/config/scripts/temp-lidarr-missing.json"
+	jq -s '.[]' /scripts/temp-lidarr-*.json > "/scripts/lidarr-monitored-list.json"
+	missinglistalbumids=($(cat "/scripts/lidarr-monitored-list.json" | jq -r '.records | .[] | .id'))
+	missinglisttotal=$(cat "/scripts/lidarr-monitored-list.json" | jq -r '.records | .[] | .id' | wc -l)
+	if [ -f "/scripts/temp-lidarr-missing.json" ]; then
+		rm "/scripts/temp-lidarr-missing.json"
 	fi
 
-	if [ -f "/config/scripts/temp-lidarr-cutoff.json" ]; then
-		rm "/config/scripts/temp-lidarr-cutoff.json"
+	if [ -f "/scripts/temp-lidarr-cutoff.json" ]; then
+		rm "/scripts/temp-lidarr-cutoff.json"
 	fi
 
-	if [ -f "/config/scripts/lidarr-monitored-list.json" ]; then
-		rm "/config/scripts/lidarr-monitored-list.json"
+	if [ -f "/scripts/lidarr-monitored-list.json" ]; then
+		rm "/scripts/lidarr-monitored-list.json"
 	fi
 }
 
@@ -954,7 +954,7 @@ ArtistAlbumList () {
 	rm /config/cache/cache-info-check
 
 	if [ ! -f /config/cache/artists/$artistid/checked ]; then
-		albumcount="$(python3 /config/scripts/artist_discograpy.py "$artistid" | sort -u | wc -l)"
+		albumcount="$(python3 /scripts/artist_discograpy.py "$artistid" | sort -u | wc -l)"
 		if [ -d /config/cache/artists/$artistid/albums ]; then
 			cachecount=$(ls /config/cache/artists/$artistid/albums/* | wc -l)
 		else
@@ -964,7 +964,7 @@ ArtistAlbumList () {
 		if [ $albumcount != $cachecount ]; then
 			log "$logheader :: Searching for All Albums...."
 			log "$logheader :: $albumcount Albums found!"
-			albumids=($(python3 /config/scripts/artist_discograpy.py "$artistid" | sort -u))
+			albumids=($(python3 /scripts/artist_discograpy.py "$artistid" | sort -u))
 			if [ ! -d "/config/temp" ]; then
 				mkdir "/config/temp"
 			fi
@@ -1195,13 +1195,13 @@ ArtistMode () {
 				fi
 				logheader="$logheader :: DOWNLOAD"
 				log "$logheader :: Sending \"$deezeralbumurl\" to download client..."
-				python3 /config/scripts/dlclient.py -b $quality "$deezeralbumurl"
+				python3 /scripts/dlclient.py -b $quality "$deezeralbumurl"
 				rm -rf /tmp/deemix-imgs/*
-				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+				if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 					DownloadQualityCheck
 				fi
 				
-				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+				if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 					find "$DOWNLOADS"/amd/dlclient -type d -exec chmod $FolderPermissions {} \;
 					find "$DOWNLOADS"/amd/dlclient -type f -exec chmod $FilePermissions {} \;
 					chown -R abc:abc "$DOWNLOADS"/amd/dlclient
@@ -1210,7 +1210,7 @@ ArtistMode () {
 					continue
 				fi
 								
-				file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
+				file=$(find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | head -n 1)
 				if [ ! -z "$file" ]; then
 					artwork="$(dirname "$file")/folder.jpg"
 					if ffmpeg -y -i "$file" -c:v copy "$artwork" 2>/dev/null; then
@@ -1606,10 +1606,10 @@ WantedMode () {
 					fi
 					log "$logheader :: $deezersearchcount Albums Found"
 					if [ -z "$deezersearchalbumid" ]; then
-						if [ ! -d "/config/scripts/temp" ]; then
-							mkdir -p /config/scripts/temp
+						if [ ! -d "/scripts/temp" ]; then
+							mkdir -p /scripts/temp
 						else
-							find /config/scripts/temp -type f -delete
+							find /scripts/temp -type f -delete
 						fi
 
 						albumidlist=($(echo "$searchdata" | jq -r "select(.explicit_lyrics==true) |.album.id" | sort -u))
@@ -1619,8 +1619,8 @@ WantedMode () {
 							for id in ${!albumidlist[@]}; do
 								albumid="${albumidlist[$id]}"
 
-								if ! find /config/scripts/temp -type f -iname "*-$albumid" | read; then
-									touch "/config/scripts/temp/explicit-$albumid"
+								if ! find /scripts/temp -type f -iname "*-$albumid" | read; then
+									touch "/scripts/temp/explicit-$albumid"
 								fi
 
 							done
@@ -1632,16 +1632,16 @@ WantedMode () {
 							log "$logheader :: $albumidlistcount Clean Albums Found"
 							for id in ${!albumidlist[@]}; do
 								albumid="${albumidlist[$id]}"
-								if ! find /config/scripts/temp -type f -iname "*-$albumid" | read; then
-									touch "/config/scripts/temp/clean-$albumid"
+								if ! find /scripts/temp -type f -iname "*-$albumid" | read; then
+									touch "/scripts/temp/clean-$albumid"
 								fi
 							done
 						fi
 
-						albumlistalbumid=($(ls /config/scripts/temp | sort -r | grep -o '[[:digit:]]*'))
-						albumlistalbumidcount="$(ls /config/scripts/temp | sort -r | grep -o '[[:digit:]]*' | wc -l)"
-						if [ -d "/config/scripts/temp" ]; then
-							rm -rf /config/scripts/temp
+						albumlistalbumid=($(ls /scripts/temp | sort -r | grep -o '[[:digit:]]*'))
+						albumlistalbumidcount="$(ls /scripts/temp | sort -r | grep -o '[[:digit:]]*' | wc -l)"
+						if [ -d "/scripts/temp" ]; then
+							rm -rf /scripts/temp
 						fi
 
 						if [ -z "$deezersearchalbumid" ]; then
@@ -1778,12 +1778,12 @@ WantedMode () {
 
 		if [ ! -d "$albumbimportfolder" ]; then
 			log "$logheader :: DOWNLOADING :: $deezeralbumtitle :: $albumdeezerurl..."
-			python3 /config/scripts/dlclient.py -b $quality "$albumdeezerurl"
+			python3 /scripts/dlclient.py -b $quality "$albumdeezerurl"
 			rm -rf /tmp/deemix-imgs/*
-			if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+			if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 				DownloadQualityCheck
 			fi
-			if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+			if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 				chmod $FilePermissions "$DOWNLOADS"/amd/dlclient/*
 				chown -R abc:abc "$DOWNLOADS"/amd/dlclient
 				log "$logheader :: DOWNLOAD :: success"
@@ -1795,7 +1795,7 @@ WantedMode () {
 				continue
 			fi
 
-			file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
+			file=$(find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | head -n 1)
 			if [ ! -z "$file" ]; then
 				artwork="$(dirname "$file")/folder.jpg"
 				if ffmpeg -y -i "$file" -c:v copy "$artwork" 2>/dev/null; then
