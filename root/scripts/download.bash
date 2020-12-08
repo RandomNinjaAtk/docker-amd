@@ -827,7 +827,7 @@ MP3Convert () {
 Conversion () {
 	if [ "${FORMAT}" != "FLAC" ]; then
 		if [ $FORCECONVERT == true ]; then
-			converttrackcount=$(find /downloads-amd/amd/dlclient/ -iregex ".*/.*\.\(flac\|mp3\)" | wc -l)
+			converttrackcount=$(find /downloads-amd/amd/dlclient/ -regex ".*/.*\.\(flac\|mp3\)" | wc -l)
 		else
 			converttrackcount=$(find /downloads-amd/amd/dlclient/ -name "*.flac" | wc -l)
 		fi
@@ -1197,11 +1197,11 @@ ArtistMode () {
 				log "$logheader :: Sending \"$deezeralbumurl\" to download client..."
 				python3 /scripts/dlclient.py -b $quality "$deezeralbumurl"
 				rm -rf /tmp/deemix-imgs/*
-				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+				if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 					DownloadQualityCheck
 				fi
 				
-				if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+				if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 					find "$DOWNLOADS"/amd/dlclient -type d -exec chmod $FolderPermissions {} \;
 					find "$DOWNLOADS"/amd/dlclient -type f -exec chmod $FilePermissions {} \;
 					chown -R abc:abc "$DOWNLOADS"/amd/dlclient
@@ -1210,7 +1210,7 @@ ArtistMode () {
 					continue
 				fi
 								
-				file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
+				file=$(find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | head -n 1)
 				if [ ! -z "$file" ]; then
 					artwork="$(dirname "$file")/folder.jpg"
 					if ffmpeg -y -i "$file" -c:v copy "$artwork" 2>/dev/null; then
@@ -1780,10 +1780,10 @@ WantedMode () {
 			log "$logheader :: DOWNLOADING :: $deezeralbumtitle :: $albumdeezerurl..."
 			python3 /scripts/dlclient.py -b $quality "$albumdeezerurl"
 			rm -rf /tmp/deemix-imgs/*
-			if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+			if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 				DownloadQualityCheck
 			fi
-			if find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | read; then
+			if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 				chmod $FilePermissions "$DOWNLOADS"/amd/dlclient/*
 				chown -R abc:abc "$DOWNLOADS"/amd/dlclient
 				log "$logheader :: DOWNLOAD :: success"
@@ -1795,7 +1795,7 @@ WantedMode () {
 				continue
 			fi
 
-			file=$(find "$DOWNLOADS"/amd/dlclient -iregex ".*/.*\.\(flac\|mp3\)" | head -n 1)
+			file=$(find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | head -n 1)
 			if [ ! -z "$file" ]; then
 				artwork="$(dirname "$file")/folder.jpg"
 				if ffmpeg -y -i "$file" -c:v copy "$artwork" 2>/dev/null; then
