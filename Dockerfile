@@ -1,42 +1,40 @@
-ARG ffmpeg_tag=snapshot-ubuntu
-FROM jrottenberg/ffmpeg:${ffmpeg_tag} as ffmpeg
-FROM lsiobase/ubuntu:a7da6fde-ls13
-LABEL maintainer="RandomNinjaAtk"
+FROM ghcr.io/linuxserver/baseimage-alpine:3.12 AS python
 
-# Add files from ffmpeg
-COPY --from=ffmpeg /usr/local/ /usr/local/
+RUN apk add build-base python3 python3-dev py3-pip && \
+    echo "*********** install python packages ***********" && \
+	pip install wheel && \
+	pip wheel --wheel-dir=/root/wheels \
+		yq \
+		mutagen \
+		r128gain \
+		deemix 
+
+FROM ghcr.io/linuxserver/baseimage-alpine:3.12
+
+COPY --from=python /root/wheels /root/wheels
 
 ENV TITLE="Automated Music Downloader (AMD)"
 ENV TITLESHORT="AMD"
-ENV VERSION="1.1.3"
+ENV VERSION="1.1.4"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV DOWNLOADMODE="wanted"
 
-RUN \
-	echo "************ install dependencies ************" && \
-	echo "************ install packages ************" && \
-	apt-get update -y && \
-	apt-get upgrade -y && \
-	apt-get install -y --no-install-recommends \
-		netbase \
-		jq \
-		mp3val \
-		flac \
-		eyed3 \
-		python3 \
-		python3-pip && \
-	rm -rf \
-		/tmp/* \
-		/var/lib/apt/lists/* \
-		/var/tmp/* && \
-	echo "************ install updated ffmpeg ************" && \
-	chgrp users /usr/local/bin/ffmpeg && \
- 	chgrp users /usr/local/bin/ffprobe && \
-	chmod g+x /usr/local/bin/ffmpeg && \
-	chmod g+x /usr/local/bin/ffprobe && \
-	echo "************ install python packages ************" && \
-	python3 -m pip install --no-cache-dir -U \
+RUN apk add --no-cache \
+    bash \
+    ca-certificates \
+    curl \
+    jq \
+	flac \
+	eyed3 \
+    opus-tools \
+	python3 \
+	py3-pip \
+    ffmpeg && \
+    echo "************ install python packages ************" && \
+	pip install \
+      --no-index \
+      --find-links=/root/wheels \
 		yq \
 		mutagen \
 		r128gain \
@@ -44,27 +42,10 @@ RUN \
 	echo "************ setup dl client config directory ************" && \
 	echo "************ make directory ************" && \
 	mkdir -p "${XDG_CONFIG_HOME}/deemix"
-	
-RUN \
-	apt-get update -y && \
-	apt-get install -y --no-install-recommends \
-		libva-drm2 \
-		libva2 \
-		libgomp1 \
-		i965-va-driver && \
-	rm -rf \
-		/tmp/* \
-		/var/lib/apt/lists/* \
-		/var/tmp/*
-    
-# copy local files
+
+    # copy local files
 COPY root/ /
 
-RUN \
-	echo "************ install updated opus-tools ************" && \
-	bash /opus.bash
-
-# set work directory
 WORKDIR /config
 
 # ports and volumes
