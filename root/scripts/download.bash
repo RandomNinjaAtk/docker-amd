@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.38"
+	log "####### SCRIPT VERSION 1.5.39"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -978,7 +978,7 @@ ArtistAlbumList () {
 					chown -R abc:abc /config/cache/artists/$artistid
 				fi
 				if [ ! -f /config/cache/artists/$artistid/albums/${albumid}.json ]; then
-					if curl -sL --fail "https://api.deezer.com/album/${albumid}" -o "/config/temp/${albumid}.json"; then
+					if wget "https://api.deezer.com/album/${albumid}" -O "/config/temp/${albumid}.json" -q; then
 						log "$logheader :: $currentprocess of $albumcount :: Downloading Album info..."
 						mv /config/temp/${albumid}.json /config/cache/artists/$artistid/albums/${albumid}.json
 						chmod $FilePermissions /config/cache/artists/$artistid/albums/${albumid}.json
