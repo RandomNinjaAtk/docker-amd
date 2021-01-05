@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.42"
+	log "####### SCRIPT VERSION 1.5.43"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1384,9 +1384,23 @@ WantedMode () {
 			error=1
 		fi
 
+		if [ -f "/config/logs/searched/$albumreleasegroupmbzid" ]; then
+			log "$logheader :: PREVOUSLY SEARCHED, SKIPPING..."
+			continue
+		fi
+
 		if [[ -f "/config/logs/notfound.log" && $error == 1 ]]; then
 			if cat "/config/logs/notfound.log" | grep -i ":: $albumreleasegroupmbzid ::" | read; then
 				log "$logheader :: PREVOUSLY NOT FOUND SKIPPING..."
+				if [ ! -d "/config/logs/searched" ]; then
+					mkdir -p "/config/logs/searched"
+				fi
+				if [ -d "/config/logs/searched" ]; then
+					touch /config/logs/searched/$albumreleasegroupmbzid
+				fi
+				continue
+			elif [ -f "/config/logs/searched/$albumreleasegroupmbzid" ]; then
+				log "$logheader :: PREVOUSLY SEARCHED, SKIPPING..."
 				continue
 			else
 				log "$logheader :: SEARCHING..."
@@ -1799,6 +1813,12 @@ WantedMode () {
 		if [ $error == 1 ]; then
 			log "$logheader :: ERROR :: No deezer album url found"
 			echo "$albumartistname :: $albumreleasegroupmbzid :: $albumtitle"  >> "/config/logs/notfound.log"
+			if [ ! -d "/config/logs/searched" ]; then
+				mkdir -p "/config/logs/searched"
+			fi
+			if [ -d "/config/logs/searched" ]; then
+				touch /config/logs/searched/$albumreleasegroupmbzid
+			fi
 			continue
 		fi
 
@@ -1812,6 +1832,12 @@ WantedMode () {
 		if [ -f "/config/logs/download.log" ]; then
 			if cat "/config/logs/download.log" | grep -i "$albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder" | read; then
 				log "$logheader :: Already Downloaded"
+				if [ ! -d "/config/logs/searched" ]; then
+					mkdir -p "/config/logs/searched"
+				fi
+				if [ -d "/config/logs/searched" ]; then
+					touch /config/logs/searched/$albumreleasegroupmbzid
+				fi
 				continue
 			fi
 		fi
@@ -1822,6 +1848,7 @@ WantedMode () {
 
 		if [ ! -d "$albumbimportfolder" ]; then
 			log "$logheader :: DOWNLOADING :: $deezeralbumtitle :: $albumdeezerurl..."
+			albumdeezerid=$(echo "$albumdeezerurl" | grep -o '[[:digit:]]*')
 			python3 /scripts/dlclient.py -b $quality "$albumdeezerurl"
 			rm -rf /tmp/deemix-imgs/*
 			if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
@@ -1832,6 +1859,12 @@ WantedMode () {
 				chown -R abc:abc "$DOWNLOADS"/amd/dlclient
 				log "$logheader :: DOWNLOAD :: success"
 				echo "$filelogheader :: $albumdeezerurl :: $albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder"  >> "/config/logs/download.log"
+				if [ ! -d "/config/logs/downloads" ]; then
+					mkdir -p "/config/logs/downloads"
+				fi
+				if [ -d "/config/logs/downloads" ]; then
+					touch /config/logs/downloads/$albumdeezerid
+				fi
 			else
 				log "$logheader :: DOWNLOAD :: ERROR :: No files found"
 				echo "$albumartistname :: $albumreleasegroupmbzid :: $albumtitle"  >> "/config/logs/notfound.log"
@@ -1850,6 +1883,12 @@ WantedMode () {
 			fi
 		else
 			echo "$filelogheader :: $albumdeezerurl :: $albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder"  >> "/config/logs/download.log"
+			if [ ! -d "/config/logs/downloads" ]; then
+				mkdir -p "/config/logs/downloads"
+			fi
+			if [ -d "/config/logs/downloads" ]; then
+				touch /config/logs/downloads/$albumdeezerid
+			fi
 		fi
 		
 		if [ $ENABLEPOSTPROCESSING == true ]; then
