@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.43"
+	log "####### SCRIPT VERSION 1.5.44"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1319,6 +1319,11 @@ WantedMode () {
 		albumartistname=$(echo "${lidarralbumdata}"| jq -r '.[].artist.artistName')
 		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
 		filelogheader="$albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
+		
+		if [ -f "/config/logs/searched/$albumreleasegroupmbzid" ]; then
+			log "$logheader :: PREVOUSLY SEARCHED, SKIPPING..."
+			continue
+		fi
 
 		if [ ! -z "$albumreleaseid" ]; then
 			for id in ${!albumreleaseid[@]}; do
