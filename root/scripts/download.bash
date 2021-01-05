@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.40"
+	log "####### SCRIPT VERSION 1.5.41"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -945,16 +945,18 @@ LidarrList () {
 
 ArtistAlbumList () {
 	touch -d "168 hours ago" /config/cache/cache-info-check
-	if find /config/cache/artists/$artistid -type f -iname "checked" -not -newer "/config/cache/cache-info-check" | read; then
-		rm /config/cache/artists/$artistid/checked
-		if [ -f /config/cache/artists/$artistid/albumlist.json ]; then
-			rm /config/cache/artists/$artistid/albumlist.json
+	if [ -f /config/cache/artists/$artistid/checked ]; then
+		if find /config/cache/artists/$artistid -type f -iname "checked" -not -newer "/config/cache/cache-info-check" | read; then
+			rm /config/cache/artists/$artistid/checked
+			if [ -f /config/cache/artists/$artistid/albumlist.json ]; then
+				rm /config/cache/artists/$artistid/albumlist.json
+			fi
+			if [ -f /config/cache/artists/$artistid/albumlistlower.json ]; then
+				rm /config/cache/artists/$artistid/albumlistlower.json
+			fi
+		else
+			log "$logheader :: Cached info good"
 		fi
-		if [ -f /config/cache/artists/$artistid/albumlistlower.json ]; then
-			rm /config/cache/artists/$artistid/albumlistlower.json
-		fi
-	else
-		log "$logheader :: Cached info good"
 	fi
 	rm /config/cache/cache-info-check
 
@@ -985,8 +987,12 @@ ArtistAlbumList () {
 				if [ ! -f /config/cache/artists/$artistid/albums/${albumid}.json ]; then
 					if wget "https://api.deezer.com/album/${albumid}" -O "/config/temp/${albumid}.json" -q; then
 						log "$logheader :: $currentprocess of $albumcount :: Downloading Album info..."
-						mv /config/temp/${albumid}.json /config/cache/artists/$artistid/albums/${albumid}.json
-						chmod $FilePermissions /config/cache/artists/$artistid/albums/${albumid}.json
+						mv /config/temp/${albumid}.json /config/cache/artists/$artistid/albums/${albumid}-reg.json
+						chmod $FilePermissions /config/cache/artists/$artistid/albums/${albumid}-reg.json
+						albumdata=$(cat /config/cache/artists/$artistid/albums/${albumid}-reg.json)
+						converttofilelower=${albumdata,,}
+						echo "$converttofilelower" > /config/cache/artists/$artistid/albums/${albumid}-lower.json
+						chmod $FilePermissions /config/cache/artists/$artistid/albums/${albumid}-lower.json
 					else
 						log "$logheader :: $currentprocess of $albumcount :: Error getting album information"
 					fi
@@ -1441,19 +1447,18 @@ WantedMode () {
 
 						if [ ! -f /config/cache/artists/$artistid/albumlistlower.json ]; then
 							log "$logheader :: Building Album List..."
-							albumslistdata=$(jq -s '.' /config/cache/artists/$artistid/albums/*.json)
+							albumslistdata=$(jq -s '.' /config/cache/artists/$artistid/albums/*-reg.json)
 							echo "$albumslistdata" > /config/cache/artists/$artistid/albumlist.json
 							albumsdata=$(cat /config/cache/artists/$artistid/albumlist.json)
 							log "$logheader :: Done"
-
 						else
 							albumsdata=$(cat /config/cache/artists/$artistid/albumlist.json)
 						fi
 						
 						if [ ! -f /config/cache/artists/$artistid/albumlistlower.json ]; then
-							log "$logheader :: Setting album list text to lowercase for matching..."
-							converttofilelower=${albumsdata,,}
-							echo "$converttofilelower" > /config/cache/artists/$artistid/albumlistlower.json
+							log "$logheader :: Building Lowercase Album List..."
+							albumsdatalower=$(jq -s '.' /config/cache/artists/$artistid/albums/*-lower.json)
+							echo "$albumsdatalower" > /config/cache/artists/$artistid/albumlistlower.json
 							albumsdatalower=$(cat /config/cache/artists/$artistid/albumlistlower.json)
 							log "$logheader :: Done"
 						else
