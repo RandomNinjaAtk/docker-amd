@@ -168,8 +168,8 @@ services:
 
 # Script Information
 * Script will automatically run when enabled, if disabled, you will need to manually execute with the following command:
-  * From Host CLI: `docker exec -it amd /bin/bash -c 'bash /config/scripts/download.bash'`
-  * From Docker CLI: `bash /config/scripts/download.bash`
+  * From Host CLI: `docker exec -it amd /bin/bash -c 'bash /scripts/download.bash'`
+  * From Docker CLI: `bash /scripts/download.bash`
   
 ## Directories:
 * <strong>/config/scripts</strong>
