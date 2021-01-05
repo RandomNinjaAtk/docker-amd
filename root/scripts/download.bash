@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.39"
+	log "####### SCRIPT VERSION 1.5.40"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -917,14 +917,13 @@ LidarrList () {
 
 	if [[ "$LIST" == "missing" || "$LIST" == "both" ]]; then
 		log "Downloading missing list..."
-		curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/missing/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate" -o "/scripts/temp-lidarr-missing.json"
+		wget "$LidarrUrl/api/v1/wanted/missing?page=1&pagesize=${amount}&includeArtist=true&sortDir=desc&sortKey=releaseDate&apikey=${LidarrAPIkey}" -O "/scripts/temp-lidarr-missing.json"
 		missingtotal=$(cat "/scripts/temp-lidarr-missing.json" | jq -r '.records | .[] | .id' | wc -l)
 		log "FINDING MISSING ALBUMS: ${missingtotal} Found"
 	fi
-
 	if [[ "$LIST" == "cutoff" || "$LIST" == "both" ]]; then
 		log "Downloading cutoff list..."
-		curl --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/wanted/cutoff/?page=1&pagesize=${amount}&includeArtist=true&monitored=true&sortDir=desc&sortKey=releaseDate" -o "/scripts/temp-lidarr-cutoff.json"
+		wget "$LidarrUrl/api/v1/wanted/cutoff?page=1&pagesize=${amount}&includeArtist=true&sortDir=desc&sortKey=releaseDate&apikey=${LidarrAPIkey}" -O "/scripts/temp-lidarr-cutoff.json"
 		cuttofftotal=$(cat "/scripts/temp-lidarr-cutoff.json" | jq -r '.records | .[] | .id' | wc -l)
 		log "FINDING CUTOFF ALBUMS: ${cuttofftotal} Found"
 	fi
@@ -947,7 +946,13 @@ LidarrList () {
 ArtistAlbumList () {
 	touch -d "168 hours ago" /config/cache/cache-info-check
 	if find /config/cache/artists/$artistid -type f -iname "checked" -not -newer "/config/cache/cache-info-check" | read; then
-		rm /config/cache/artists/$artistid/checked 
+		rm /config/cache/artists/$artistid/checked
+		if [ -f /config/cache/artists/$artistid/albumlist.json ]; then
+			rm /config/cache/artists/$artistid/albumlist.json
+		fi
+		if [ -f /config/cache/artists/$artistid/albumlistlower.json ]; then
+			rm /config/cache/artists/$artistid/albumlistlower.json
+		fi
 	else
 		log "$logheader :: Cached info good"
 	fi
@@ -1049,7 +1054,19 @@ ArtistMode () {
 			DeezerArtistID=$(echo "${deezerid}" | grep -o '[[:digit:]]*')
 			artistid="$DeezerArtistID"
 			ArtistAlbumList
+
+			if [ ! -f /config/cache/artists/$artistid/albumlistlower.json ]; then
+				log "$logheader :: Building Album List..."
+				albumslistdata=$(jq -s '.' /config/cache/artists/$artistid/albums/*.json)
+				echo "$albumslistdata" > /config/cache/artists/$artistid/albumlist.json
+				albumsdata=$(cat /config/cache/artists/$artistid/albumlist.json)
+				log "$logheader :: Done"
+			else
+				albumsdata=$(cat /config/cache/artists/$artistid/albumlist.json)
+			fi
+			log "$logheader :: Building Album List..."
 			albumlistdata=$(jq -s '.' /config/cache/artists/$artistid/albums/*.json)
+			log "$logheader :: Done"
 			deezeralbumlistcount="$(echo "$albumlistdata" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[].id" | wc -l)"
 			deezeralbumlistids=($(echo "$albumlistdata" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[].id"))
 			logheader="$logheader :: $urlnumber of $deezerartisturlcount"
@@ -1421,8 +1438,27 @@ WantedMode () {
 						deezerartistid="${albumartistlistlinkid[$id]}"
 						artistid="$deezerartistid"
 						ArtistAlbumList
-						albumsdata=$(jq -s '.' /config/cache/artists/$artistid/albums/*.json)
-						albumsdatalower=${albumsdata,,}
+
+						if [ ! -f /config/cache/artists/$artistid/albumlistlower.json ]; then
+							log "$logheader :: Building Album List..."
+							albumslistdata=$(jq -s '.' /config/cache/artists/$artistid/albums/*.json)
+							echo "$albumslistdata" > /config/cache/artists/$artistid/albumlist.json
+							albumsdata=$(cat /config/cache/artists/$artistid/albumlist.json)
+							log "$logheader :: Done"
+
+						else
+							albumsdata=$(cat /config/cache/artists/$artistid/albumlist.json)
+						fi
+						
+						if [ ! -f /config/cache/artists/$artistid/albumlistlower.json ]; then
+							log "$logheader :: Setting album list text to lowercase for matching..."
+							converttofilelower=${albumsdata,,}
+							echo "$converttofilelower" > /config/cache/artists/$artistid/albumlistlower.json
+							albumsdatalower=$(cat /config/cache/artists/$artistid/albumlistlower.json)
+							log "$logheader :: Done"
+						else
+							albumsdatalower=$(cat /config/cache/artists/$artistid/albumlistlower.json)
+						fi
 
 						for id in "${!lidarralbumdrecordids[@]}"; do
 							ablumrecordreleaseid=${lidarralbumdrecordids[$id]}
