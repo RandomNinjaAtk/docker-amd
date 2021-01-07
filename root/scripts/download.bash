@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.44"
+	log "####### SCRIPT VERSION 1.5.45"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1074,7 +1074,7 @@ ArtistMode () {
 				albumsdata=$(cat /config/cache/artists/$artistid/albumlist.json)
 			fi
 			log "$logheader :: Building Album List..."
-			albumlistdata=$(jq -s '.' /config/cache/artists/$artistid/albums/*.json)
+			albumlistdata=$(jq -s '.' /config/cache/artists/$artistid/albums/*-reg.json)
 			log "$logheader :: Done"
 			deezeralbumlistcount="$(echo "$albumlistdata" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[].id" | wc -l)"
 			deezeralbumlistids=($(echo "$albumlistdata" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[].id"))
@@ -1087,7 +1087,7 @@ ArtistMode () {
 				deezeralbumid="${deezeralbumlistids[$id]}"
 				albumreleasegroupmbzid=""
 				albummbid=""
-				deezeralbumdata="$(cat "/config/cache/artists/$artistid/albums/$deezeralbumid.json")"
+				deezeralbumdata="$(cat "/config/cache/artists/$artistid/albums/$deezeralbumid-reg.json")"
 				deezeralbumurl="https://deezer.com/album/$deezeralbumid"
 				deezeralbumtitle="$(echo "$deezeralbumdata" | jq -r ".title")"
 				deezeralbumtitleclean="$(echo "$deezeralbumtitle" | sed -e "s%[^[:alpha:][:digit:]._()' -]% %g" -e "s/  */ /g")"
