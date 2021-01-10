@@ -25,7 +25,7 @@ class cli(deemix):
         self.set.settings["removeAlbumVersion"] = True
         self.set.settings["syncedLyrics"] = True
         self.set.settings["coverImageTemplate"] = "folder"
-        self.set.settings["fallbackSearch"] = False
+        self.set.settings["fallbackSearch"] = FALLBACKSEARCH
         self.set.settings["tags"]["trackTotal"] = True
         self.set.settings["tags"]["discTotal"] = True
         self.set.settings["tags"]["explicit"] = True
