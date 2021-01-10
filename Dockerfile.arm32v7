@@ -31,6 +31,7 @@ ENV VERSION="1.1.4"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV DOWNLOADMODE="wanted"
+ENV FALLBACKSEARCH="True"
 
 RUN apk add --no-cache \
     bash \
