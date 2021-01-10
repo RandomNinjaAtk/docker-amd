@@ -48,6 +48,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e AUTOSTART=true` | true = Enabled :: Runs script automatically on startup |
 | `-e SCRIPTINTERVAL=1h` | #s or #m or #h or #d :: s = seconds, m = minutes, h = hours, d = days :: Amount of time between each script run, when AUTOSTART is enabled|
 | `-e DOWNLOADMODE=wanted` | wanted or artist :: wanted mode only download missing/cutoff :: artist mode downloads all albums by an artist (requires lidarr volume mapping root media folders for import) |
+| `-e FALLBACKSEARCH=True` | True or False :: True = enabled :: Allows DL client to search for missing songs when they are not available |
 | `-e LIST=both` | both or missing or cutoff :: both = missing + cutoff :: missng = lidarr missing list :: cutoff = lidarr cutoff list |
 | `-e SearchType=both` | both or artist or fuzzy :: both = artist + fuzzy searching :: artist = only artist searching :: fuzzy = only fuzzy searching (Various Artist is always fuzzy searched, regardless of setting) |
 | `-e Concurrency=1` | Number of concurrent downloads |
