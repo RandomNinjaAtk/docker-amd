@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.46"
+	log "####### SCRIPT VERSION 1.5.47"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -120,7 +120,7 @@ Configuration () {
 	fi
 	
 	if [ ! -z "$FALLBACKSEARCH" ]; then
-		log "Audio: FALLBACKSEARCH: $Concurrency"
+		log "Audio: FALLBACKSEARCH: $FALLBACKSEARCH"
 		sed -i "s%FALLBACKSEARCHS%$FALLBACKSEARCH%g" "/scripts/dlclient.py"
 	else
 		log "WARNING: FALLBACKSEARCH setting invalid, defaulting to: True"
@@ -1105,13 +1105,14 @@ ArtistMode () {
 				deezeralbumimage="$(echo "$deezeralbumdata" | jq -r ".cover_xl")"
 				deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
 				deezeralbumexplicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
+				deezeralbumtrackcount="$(echo "$deezeralbumdata" | jq -r ".nb_tracks")"
 				if [ "$deezeralbumexplicit" == "true" ]; then 
 					lyrictype="EXPLICIT"
 				else
 					lyrictype="CLEAN"
 				fi
 				deezeralbumyear="${deezeralbumdate:0:4}"
-				logheader="$logheader :: $deezeralbumprocess of $deezeralbumlistcount :: PROCESSING :: ${deezeralbumtype^^} :: $deezeralbumyear :: $lyrictype :: $deezeralbumtitle"
+				logheader="$logheader :: $deezeralbumprocess of $deezeralbumlistcount :: PROCESSING :: ${deezeralbumtype^^} :: $deezeralbumyear :: $lyrictype :: $deezeralbumtitle :: $deezeralbumtrackcount Tracks"
 				log "$logheader"
 				
 				LidArtistPath="$originalpath"
@@ -1228,20 +1229,41 @@ ArtistMode () {
 						continue
 					fi
 				fi
-				logheader="$logheader :: DOWNLOAD"
+				logheader="$logheader :: DOWNLOAD :: $deezeralbumtrackcount Tracks"
 				log "$logheader :: Sending \"$deezeralbumurl\" to download client..."
 				python3 /scripts/dlclient.py -b $quality "$deezeralbumurl"
 				rm -rf /tmp/deemix-imgs/*
+
+				if [ -f "$DOWNLOADS/amd/dlclient/errors.txt" ]; then
+					log "$logheader :: DOWNLOAD :: ERROR :: Error log found, skipping..."
+					rm "$DOWNLOADS"/amd/dlclient/*
+					logheader="$logheaderstart"
+					continue
+				fi
+
 				if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 					DownloadQualityCheck
 				fi
 				
+				downloadcount=$(find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | wc -l)
+
+				if [ "$deezeralbumtrackcount" != "$downloadcount" ]; then
+					log "$logheader :: DOWNLOAD :: ERROR :: Downloaded track count ($downloadcount) does not match requested track count, skipping..."
+					rm "$DOWNLOADS"/amd/dlclient/*
+					logheader="$logheaderstart"
+					continue
+				else
+					log "$logheader :: DOWNLOAD :: $downloadcount Tracks found!"
+				fi
+
+
 				if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 					find "$DOWNLOADS"/amd/dlclient -type d -exec chmod $FolderPermissions {} \;
 					find "$DOWNLOADS"/amd/dlclient -type f -exec chmod $FilePermissions {} \;
 					chown -R abc:abc "$DOWNLOADS"/amd/dlclient
 				else
 					log "$logheader :: DOWNLOAD :: ERROR :: No files found"
+					logheader="$logheaderstart"
 					continue
 				fi
 								
@@ -1261,20 +1283,6 @@ ArtistMode () {
 					AddReplaygainTags
 				fi
 				
-				if [ ! -f /downloads-amd/amd/dlclient/temp-folder.jpg ]; then
-					albumimage=$(echo "$deezeralbumimage" | sed 's%80-0-0.jpg%100-0-0.jpg%g')
-					curl -s "$albumimage" -o /downloads-amd/amd/dlclient/temp-folder.jpg
-				fi
-				
-				# remove low quality embedded iamge and replace with high quality local image
-				if [ -f /downloads-amd/amd/dlclient/temp-folder.jpg ]; then
-					if [ -f /downloads-amd/amd/dlclient/folder.jpg ]; then 
-						rm /downloads-amd/amd/dlclient/folder.jpg
-						mv /downloads-amd/amd/dlclient/temp-folder.jpg /downloads-amd/amd/dlclient/folder.jpg
-					else
-						mv /downloads-amd/amd/dlclient/temp-folder.jpg /downloads-amd/amd/dlclient/folder.jpg
-					fi
-				fi
 
 				if [ ! -d "$LidArtistPath/$albumfolder" ]; then
 					mkdir -p "$LidArtistPath/$albumfolder"
@@ -1911,23 +1919,6 @@ WantedMode () {
 			AddReplaygainTags
 		fi
 		
-		deezeralbumimage="$(echo "$deezeralbumdata" | jq -r ".cover_xl")"
-		
-		if [ ! -f /downloads-amd/amd/dlclient/temp-folder.jpg ]; then
-			albumimage=$(echo "$deezeralbumimage" | sed 's%80-0-0.jpg%100-0-0.jpg%g')
-			curl -s "$albumimage" -o /downloads-amd/amd/dlclient/temp-folder.jpg
-		fi
-		
-		# remove low quality embedded iamge and replace with high quality local image
-		if [ -f /downloads-amd/amd/dlclient/temp-folder.jpg ]; then
-			if [ -f /downloads-amd/amd/dlclient/folder.jpg ]; then 
-				rm /downloads-amd/amd/dlclient/folder.jpg
-				mv /downloads-amd/amd/dlclient/temp-folder.jpg /downloads-amd/amd/dlclient/folder.jpg
-			else
-				mv /downloads-amd/amd/dlclient/temp-folder.jpg /downloads-amd/amd/dlclient/folder.jpg
-			fi
-		fi
-
 		if [ ! -d "$DOWNLOADS/amd/import" ]; then
 			mkdir -p "$DOWNLOADS/amd/import"
 			chmod $FolderPermissions "$DOWNLOADS/amd/import"
