@@ -14,7 +14,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.45"
+	log "####### SCRIPT VERSION 1.5.46"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -117,6 +117,15 @@ Configuration () {
 		log "WARNING: Concurrency setting invalid, defaulting to: 1"
 		Concurrency="1"
 		sed -i "s%CONCURRENT_DOWNLOADS%$Concurrency%g" "/scripts/dlclient.py"
+	fi
+	
+	if [ ! -z "$FALLBACKSEARCH" ]; then
+		log "Audio: FALLBACKSEARCH: $Concurrency"
+		sed -i "s%FALLBACKSEARCHS%$FALLBACKSEARCH%g" "/scripts/dlclient.py"
+	else
+		log "WARNING: FALLBACKSEARCH setting invalid, defaulting to: True"
+		FALLBACKSEARCH="TRUE"
+		sed -i "s%FALLBACKSEARCHS%$FALLBACKSEARCH%g" "/scripts/dlclient.py"
 	fi
 	
 	if [ ! -z "$FORMAT" ]; then
