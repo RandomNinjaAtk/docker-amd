@@ -20,12 +20,12 @@ class cli(deemix):
         self.set.settings["saveArtworkArtist"] = True
         self.set.settings["queueConcurrency"] = CONCURRENT_DOWNLOADS
         self.set.settings["jpegImageQuality"] = EMBEDDED_COVER_QUALITY
-        self.set.settings["embeddedArtworkSize"] = 1000
-        self.set.settings["localArtworkSize"] = 1000
+        self.set.settings["embeddedArtworkSize"] = 1200
+        self.set.settings["localArtworkSize"] = 1200
         self.set.settings["removeAlbumVersion"] = True
         self.set.settings["syncedLyrics"] = True
         self.set.settings["coverImageTemplate"] = "folder"
-        self.set.settings["fallbackSearch"] = True
+        self.set.settings["fallbackSearch"] = False
         self.set.settings["tags"]["trackTotal"] = True
         self.set.settings["tags"]["discTotal"] = True
         self.set.settings["tags"]["explicit"] = True
