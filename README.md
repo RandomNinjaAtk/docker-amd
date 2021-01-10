@@ -91,6 +91,7 @@ docker create \
   -e AUTOSTART=true \
   -e SCRIPTINTERVAL=1h \
   -e DOWNLOADMODE=wanted \
+  -e FALLBACKSEARCH=True \
   -e LIST=both \
   -e SearchType=both \
   -e Concurrency=1 \
@@ -139,6 +140,7 @@ services:
       - AUTOSTART=true
       - SCRIPTINTERVAL=1h
       - DOWNLOADMODE=wanted
+      - FALLBACKSEARCH=True
       - LIST=both
       - SearchType=both
       - Concurrency=1
