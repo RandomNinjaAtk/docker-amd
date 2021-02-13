@@ -58,7 +58,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | `-e ENABLEPOSTPROCESSING=true` | true = enabled :: enables or disables post processing processes as much as possible |
 | `-e FORCECONVERT=false` | true = enabled :: This will convert lossy MP3 to desired target format (exluding FLAC/ALAC, ALAC will convert to AAC) |
 | `-e requirequality=false` | true = enabled :: Requires all downloaded files match target file extension (mp3 or flac) when enabled |
-| `-e MatchDistance=10` | Set as an integer, the higher the number, the more lienet it is. Example: A match score of 0 is a perfect match :: For more information, this score is produced using this function: [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance) |
+| `-e MatchDistance=10` | Set as an integer, the higher the number, the more lenient it is. Example: A match score of 0 is a perfect match :: For more information, this score is produced using this function: [Algorithm Implementation/Strings/Levenshtein distance](https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance) |
 | `-e replaygain=true` | true = enabled :: Scans and analyzes files to add replaygain tags to song metadata |
 | `-e FolderPermissions=766` | Based on chmod linux permissions |
 | `-e FilePermissions=666` | Based on chmod linux permissions |
