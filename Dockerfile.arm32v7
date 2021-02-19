@@ -16,6 +16,9 @@ RUN apk add build-base python3 python3-dev py3-pip && \
 		yq \
 		mutagen \
 		r128gain \
+		mediafile \
+		confuse \
+		https://github.com/beetbox/beets/tarball/master \
 		deemix 
 
 FROM ghcr.io/linuxserver/baseimage-alpine:arm32v7-3.12
@@ -51,6 +54,9 @@ RUN apk add --no-cache \
 		yq \
 		mutagen \
 		r128gain \
+		mediafile \
+		confuse \
+		https://github.com/beetbox/beets/tarball/master \
 		deemix && \
 	echo "************ setup dl client config directory ************" && \
 	echo "************ make directory ************" && \
