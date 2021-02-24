@@ -42,7 +42,7 @@ Container images are configured using parameters passed at runtime (such as thos
 | Parameter | Function |
 | --- | --- |
 | `-v /config` | Configuration files for Lidarr. |
-| `-v /downloads-amd` | Path to your download folder location. (<strong>DO NOT DELETE, this is a required path</strong>) :: <strong>!!!IMPORTANT!!!</strong> Map this exact volume mount to your Lidarr Container for everything to work properly!!! |
+| `-v /downloads-amd` | Path to your download folder location. (<strong>DO NOT DELETE, this is a required path</strong>) :: <strong>!!!IMPORTANT!!! Map this exact volume mount to your Lidarr Container for everything to work properly!!! </strong>|
 | `-e PUID=1000` | for UserID - see below for explanation |
 | `-e PGID=1000` | for GroupID - see below for explanation |
 | `-e AUTOSTART=true` | true = Enabled :: Runs script automatically on startup |
