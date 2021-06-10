@@ -5,10 +5,8 @@ export LANG=C.UTF-8
 agent="automated-music-downloader ( https://github.com/RandomNinjaAtk/docker-amd )"
 
 Configuration () {
-	processstartid="$(ps -A -o pid,cmd|grep "start.bash" | grep -v grep | head -n 1 | awk '{print $1}')"
-	processdownloadid="$(ps -A -o pid,cmd|grep "download.bash" | grep -v grep | head -n 1 | awk '{print $1}')"
-	log "To kill script, use the following command:"
-	log "kill -9 $processstartid"
+	processdownloadid="$(pgrep -f 'bash /scripts/download.bash')"
+	log "To kill the download script, use the following command:"
 	log "kill -9 $processdownloadid"
 	log ""
 	log ""
