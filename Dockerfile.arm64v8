@@ -18,6 +18,7 @@ RUN apk add build-base python3 python3-dev py3-pip && \
 		r128gain \
 		mediafile \
 		confuse \
+		requests \
 		https://github.com/beetbox/beets/tarball/master \
 		deemix 
 
@@ -30,7 +31,7 @@ COPY --from=python /root/wheels /root/wheels
 
 ENV TITLE="Automated Music Downloader (AMD)"
 ENV TITLESHORT="AMD"
-ENV VERSION="1.1.6"
+ENV VERSION="1.1.7"
 ENV MBRAINZMIRROR="https://musicbrainz.org"
 ENV XDG_CONFIG_HOME="/config/deemix/xdg"
 ENV DOWNLOADMODE="wanted"
@@ -56,6 +57,7 @@ RUN apk add --no-cache \
 		r128gain \
 		mediafile \
 		confuse \
+		requests \
 		https://github.com/beetbox/beets/tarball/master \
 		deemix && \
 	echo "************ setup dl client config directory ************" && \
