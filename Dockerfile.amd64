@@ -1,6 +1,6 @@
 FROM ghcr.io/linuxserver/baseimage-alpine:3.12 AS python
 
-RUN apk add build-base python3 python3-dev py3-pip && \
+RUN apk add build-base python3 python3-dev py3-pip musl-dev gcc && \
     echo "*********** install python packages ***********" && \
 	pip install wheel && \
 	pip wheel --wheel-dir=/root/wheels \
@@ -36,6 +36,8 @@ RUN apk add --no-cache \
     	opus-tools \
 	python3 \
 	py3-pip \
+  musl-dev \
+  gcc \
 	ffmpeg && \
     echo "************ install python packages ************" && \
 	pip install \
