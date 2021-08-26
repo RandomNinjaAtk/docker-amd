@@ -46,9 +46,9 @@ Configuration () {
 		log "ERROR: API Key: $LidarrAPIkey"
 		error=1
 	fi
-	
+
 	if [ ! -z "$LIDARRREMOTEPATH" ]; then
-		log "Lidarr Remote Path Mapping: ENABLED ($LIDARRREMOTEPATH)"		
+		log "Lidarr Remote Path Mapping: ENABLED ($LIDARRREMOTEPATH)"
 		remotepath="true"
 	else
 		remotepath="false"
@@ -118,7 +118,7 @@ Configuration () {
 		Concurrency="1"
 		sed -i "s%CONCURRENT_DOWNLOADS%$Concurrency%g" "/scripts/dlclient.py"
 	fi
-	
+
 	if [ ! -z "$FALLBACKSEARCH" ]; then
 		log "Audio: FALLBACKSEARCH: $FALLBACKSEARCH"
 		sed -i "s%FALLBACKSEARCHS%$FALLBACKSEARCH%g" "/scripts/dlclient.py"
@@ -127,7 +127,7 @@ Configuration () {
 		FALLBACKSEARCH="TRUE"
 		sed -i "s%FALLBACKSEARCHS%$FALLBACKSEARCH%g" "/scripts/dlclient.py"
 	fi
-	
+
 	if [ ! -z "$FORMAT" ]; then
 		log "Audio: Download Format: $FORMAT"
 		if [ "$FORMAT" = "ALAC" ]; then
@@ -184,7 +184,7 @@ Configuration () {
 			quality="FLAC"
 		fi
 	fi
-	
+
 	if [ ! -z "$FORCECONVERT" ]; then
 		if [ $FORCECONVERT == true ]; then
 			log "Audio: Force Convert: ENABLED"
@@ -196,7 +196,7 @@ Configuration () {
 		log "WARNING: FORCECONVERT setting invalid, using default setting"
 		FORCECONVERT="false"
 	fi
-	
+
 	if [ ! -z "$ENABLEPOSTPROCESSING" ]; then
 		if [ $ENABLEPOSTPROCESSING == true ]; then
 			log "Audio: Audio Post Processing: ENABLED"
@@ -216,7 +216,7 @@ Configuration () {
 		log "WARNING: POSTPROCESSTHREADS setting invalid, defaulting to: 1"
 		log "Audio: Number of Post Process Threads: $POSTPROCESSTHREADS"
 	fi
-	
+
 	if [ ! -z "$EMBEDDED_COVER_QUALITY" ]; then
 		log "Audio: Embedded Cover Quality: $EMBEDDED_COVER_QUALITY (%)"
 		sed -i "s%EMBEDDED_COVER_QUALITY%$EMBEDDED_COVER_QUALITY%g" "/scripts/dlclient.py"
@@ -226,7 +226,7 @@ Configuration () {
 		log "Audio: Embedded Cover Quality: $EMBEDDED_COVER_QUALITY (%)"
 		sed -i "s%EMBEDDED_COVER_QUALITY%$EMBEDDED_COVER_QUALITY%g" "/scripts/dlclient.py"
 	fi
-	
+
 	if [ "$DOWNLOADMODE" == "artist" ]; then
 		log "Audio: Dowload Mode: $DOWNLOADMODE (Archives all albums by artist)"
 		wantit=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/rootFolder")
@@ -242,17 +242,17 @@ Configuration () {
 				continue
 			fi
 		done
-		
+
 		if [ ! -z "$ALBUM_TYPE_FILTER" ]; then
 			ALBUM_FILTER=true
 			log "Audio: Album Type Filter: ENABLED"
-			log "Audio: Filtering: $ALBUM_TYPE_FILTER"		
+			log "Audio: Filtering: $ALBUM_TYPE_FILTER"
 		else
 			ALBUM_FILTER=false
 			log "Audio: Album Type Filter: DISABLED"
 		fi
-	
-		
+
+
 		if [ "$NOTIFYPLEX" == "true" ]; then
 			log "Audio: Plex Library Notification: ENABLED"
 			plexlibraries="$(curl -s "$PLEXURL/library/sections?X-Plex-Token=$PLEXTOKEN" | xq .)"
@@ -285,7 +285,7 @@ Configuration () {
 		log "WARNING: requirequality setting invalid, defaulting to: false"
 		requirequality="false"
 	fi
-	
+
 	if [ "$DOWNLOADMODE" == "wanted" ]; then
 		log "Audio: Dowload Mode: $DOWNLOADMODE (Processes monitored albums)"
 		if [ "$LIST" == "both" ]; then
@@ -310,7 +310,7 @@ Configuration () {
 			log "Audio: Search Type: Artist Searching & Backup Fuzzy Searching"
 			SearchType="both"
 		fi
-	
+
 		if [ ! -z "$MatchDistance" ]; then
 			log "Audio: Match Distance: $MatchDistance"
 		else
@@ -318,7 +318,7 @@ Configuration () {
 			MatchDistance="10"
 			log "Audio: Match Distance: $MatchDistance"
 		fi
-		
+
 	fi
 
 	if [ ! -z "$replaygain" ]; then
@@ -375,7 +375,7 @@ AlbumFilter () {
 }
 
 FlacConvert () {
-	
+
 	fname="$1"
 	filename="$(basename "${fname%.flac}")"
 	if [ "$extension" == "m4a" ]; then
@@ -399,7 +399,7 @@ FlacConvert () {
 		songcomposer="null"
 		songisrc="null"
 	fi
-	if [ "$extension" == "m4a" ]; then					
+	if [ "$extension" == "m4a" ]; then
 		tags="$(ffprobe -v quiet -print_format json -show_format "$fname" | jq -r '.[] | .tags')"
 		filelrc="${fname%.flac}.lrc"
 		songtitle="$(echo "$tags" | jq -r ".TITLE")"
@@ -429,7 +429,7 @@ FlacConvert () {
 		songmixer="$(echo "$tags" | jq -r ".mixer")"
 		songwriter="$(echo "$tags" | jq -r ".writer")"
 		songbarcode="$(echo "$tags" | jq -r ".BARCODE")"
-										
+
 		if [ -f "$filelrc" ]; then
 			songsyncedlyrics="$(cat "$filelrc")"
 		else
@@ -491,7 +491,7 @@ FlacConvert () {
 		if [ "$songdate" = "null" ]; then
 			songdate=""
 		fi
-					
+
 		if [ "$songyear" = "null" ]; then
 			songyear=""
 		fi
@@ -538,7 +538,7 @@ FlacConvert () {
 			songcomment=""
 		fi
 	fi
-	
+
 	if [ "${FORMAT}" == "OPUS" ]; then
 		if opusenc --bitrate $BITRATE --music "$fname" "${fname%.flac}.temp.$extension"; then
 			converterror=0
@@ -552,7 +552,7 @@ FlacConvert () {
 			converterror=1
 		fi
 	fi
-	
+
 	if [ "$converterror" == "1" ]; then
 		log "$logheader :: CONVERSION :: ERROR :: Coversion Failed: $filename, performing cleanup..."
 		rm "${fname%.flac}.temp.$extension"
@@ -561,7 +561,7 @@ FlacConvert () {
 		mv "${fname%.flac}.temp.$extension" "${fname%.flac}.$extension"
 		log "$logheader :: CONVERSION :: $filename :: Converted!"
 	fi
-				
+
 	if [ "$extension" == "m4a" ]; then
 		log "$logheader :: CONVERSION :: $filename :: Tagging"
 		python3 /scripts/tag.py \
@@ -602,7 +602,7 @@ FlacConvert () {
 	if [ -f "${fname%.flac}.$extension" ]; then
 		rm "$fname"
 		sleep 0.1
-	fi			
+	fi
 }
 
 MP3Convert () {
@@ -657,7 +657,7 @@ MP3Convert () {
 		songengineer=""
 		songproducer=""
 		songmixer=""
-		songbarcode="$(echo "$tags" | jq -r ".BARCODE")"	
+		songbarcode="$(echo "$tags" | jq -r ".BARCODE")"
 
 		if [ -f "$filelrc" ]; then
 			songsyncedlyrics="$(cat "$filelrc")"
@@ -720,7 +720,7 @@ MP3Convert () {
 		if [ "$songdate" = "null" ]; then
 			songdate=""
 		fi
-							
+
 		if [ "$songyear" = "null" ]; then
 			songyear=""
 		fi
@@ -732,7 +732,7 @@ MP3Convert () {
 		if [ "$songcomposer" = "null" ]; then
 			songcomposer=""
 		else
-			songcomposer=${songcomposer//;/, }						
+			songcomposer=${songcomposer//;/, }
 		fi
 
 		if [ "$songwriter" = "null" ]; then
@@ -767,7 +767,7 @@ MP3Convert () {
 			songcomment=""
 		fi
 	fi
-						
+
 	if [ "${FORMAT}" == "OPUS" ]; then
 		if opusenc --bitrate $BITRATE --music "$fname" "${fname%.mp3}.temp.$extension"; then
 			converterror=0
@@ -781,7 +781,7 @@ MP3Convert () {
 			converterror=1
 		fi
 	fi
-	
+
 	if [ "$converterror" == "1" ]; then
 		log "$logheader :: CONVERSION :: ERROR :: Coversion Failed: $filename, performing cleanup..."
 		rm "${fname%.mp3}.temp.$extension"
@@ -790,7 +790,7 @@ MP3Convert () {
 		mv "${fname%.mp3}.temp.$extension" "${fname%.mp3}.$extension"
 		log "$logheader :: CONVERSION :: $filename :: Converted!"
 	fi
-						
+
 	if [ "$extension" == "m4a" ]; then
 		log "$logheader :: CONVERSION :: $filename :: Tagging"
 		python3 /scripts/tag.py \
@@ -826,7 +826,7 @@ MP3Convert () {
 			--songartwork "$cover"
 		log "$logheader :: CONVERSION :: $filename :: Tagged"
 	fi
-	
+
 	if [ -f "${fname%.mp3}.$extension" ]; then
 		rm "$fname"
 		sleep 0.1
@@ -843,7 +843,7 @@ Conversion () {
 		log "$logheader :: CONVERSION :: Converting: $converttrackcount Tracks (Target Format: $FORMAT (${BITRATE}))"
 		if find /downloads-amd/amd/dlclient/  -name "*.flac" | read; then
 			for fname in /downloads-amd/amd/dlclient/*.flac; do
-				FlacConvert "$fname" &		
+				FlacConvert "$fname" &
 				N=$POSTPROCESSTHREADS
 				(( ++count % N == 0)) && wait
 			done
@@ -857,13 +857,13 @@ Conversion () {
 					check=2
 				fi
 			done
-		fi			
-		
+		fi
+
 		if [ $FORCECONVERT == true ]; then
 			if [[ "${FORMAT}" != "MP3" && "${FORMAT}" != "FLAC" ]]; then
 				if find /downloads-amd/amd/dlclient/ -name "*.mp3" | read; then
 					for fname in /downloads-amd/amd/dlclient/*.mp3; do
-						MP3Convert "$fname" &	
+						MP3Convert "$fname" &
 						N=$POSTPROCESSTHREADS
 						(( ++count % N == 0)) && wait
 					done
@@ -976,7 +976,7 @@ ArtistAlbumList () {
 		else
 			cachecount=0
 		fi
-		
+
 		if [ $albumcount != $cachecount ]; then
 			log "$logheader :: Searching for All Albums...."
 			log "$logheader :: $albumcount Albums found!"
@@ -1056,7 +1056,7 @@ ArtistMode () {
 		logheader="$artistnumber of $wantedtotal :: $LidArtistNameCap"
 		logheaderartiststart="$logheader"
 		log "$logheader"
-		
+
 		if [ -z "$deezerartisturl" ]; then
 			log "$logheader :: ERROR :: Deezer Artist ID not found..."
 			continue
@@ -1090,7 +1090,7 @@ ArtistMode () {
 			logheader="$logheader :: $urlnumber of $deezerartisturlcount"
 			logheaderstart="$logheader"
 			log "$logheader"
-			
+
 			for id in ${!deezeralbumlistids[@]}; do
 				deezeralbumprocess=$(( $id + 1 ))
 				deezeralbumid="${deezeralbumlistids[$id]}"
@@ -1106,7 +1106,7 @@ ArtistMode () {
 				deezeralbumtype="$(echo "$deezeralbumdata" | jq -r ".record_type")"
 				deezeralbumexplicit="$(echo "$deezeralbumdata" | jq -r ".explicit_lyrics")"
 				deezeralbumtrackcount="$(echo "$deezeralbumdata" | jq -r ".nb_tracks")"
-				if [ "$deezeralbumexplicit" == "true" ]; then 
+				if [ "$deezeralbumexplicit" == "true" ]; then
 					lyrictype="EXPLICIT"
 				else
 					lyrictype="CLEAN"
@@ -1114,19 +1114,19 @@ ArtistMode () {
 				deezeralbumyear="${deezeralbumdate:0:4}"
 				logheader="$logheader :: $deezeralbumprocess of $deezeralbumlistcount :: PROCESSING :: ${deezeralbumtype^^} :: $deezeralbumyear :: $lyrictype :: $deezeralbumtitle :: $deezeralbumtrackcount Tracks"
 				log "$logheader"
-				
+
 				LidArtistPath="$originalpath"
 				LidArtistNameCap="$originalLidArtistNameCap"
 				LidArtistNameCapClean="$originalLidArtistNameCapClean"
 				albumartistname="$originalalbumartistname"
 				albumartistmbzid="$originalalalbumartistmbzid"
-				
+
 				if [ -f /config/logs/downloads/$deezeralbumid ]; then
 					log "$logheader :: Album ($deezeralbumid) Already Downloaded..."
 					logheader="$logheaderstart"
 					continue
 				fi
-				
+
 				if [ "$deezeralbumartistid" != "$artistid" ]; then
 					if [ "$deezeralbumartistid" == "5080" ] && [ ! -z "$variousartistpath" ]; then
 						LidArtistPath="$variousartistpath"
@@ -1140,14 +1140,14 @@ ArtistMode () {
 						continue
 					fi
 				fi
-				
+
 				albumfolder="$LidArtistNameCapClean - ${deezeralbumtype^^} - $deezeralbumyear - $deezeralbumtitleclean ($lyrictype) ($deezeralbumid)"
-				
+
 				if [ -f "$LidArtistPath/$albumfolder/errors.txt" ]; then
 					log "$logheader :: Existing Download found with errors, retrying..."
 					rm -rf "$LidArtistPath/$albumfolder"
 				fi
-				
+
 				if [ $ALBUM_FILTER == true ]; then
 					AlbumFilter
 
@@ -1222,7 +1222,7 @@ ArtistMode () {
 							fi
 						fi
 					fi
-					
+
 					if find "$LidArtistPath" -iname "* ($deezeralbumid)" | read; then
 						log "$logheader :: Alaready Downloaded..."
 						logheader="$logheaderstart"
@@ -1244,7 +1244,7 @@ ArtistMode () {
 				if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 					DownloadQualityCheck
 				fi
-				
+
 				downloadcount=$(find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | wc -l)
 
 				if [ "$deezeralbumtrackcount" != "$downloadcount" ]; then
@@ -1266,7 +1266,7 @@ ArtistMode () {
 					logheader="$logheaderstart"
 					continue
 				fi
-								
+
 				file=$(find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | head -n 1)
 				if [ ! -z "$file" ]; then
 					artwork="$(dirname "$file")/folder.jpg"
@@ -1276,13 +1276,13 @@ ArtistMode () {
 						log "$logheader :: ERROR :: No artwork found"
 					fi
 				fi
-				
+
 				if [ $ENABLEPOSTPROCESSING == true ]; then
 					TagFix
 					Conversion
 					AddReplaygainTags
 				fi
-				
+
 
 				if [ ! -d "$LidArtistPath/$albumfolder" ]; then
 					mkdir -p "$LidArtistPath/$albumfolder"
@@ -1293,11 +1293,11 @@ ArtistMode () {
 				chown -R abc:abc "$LidArtistPath/$albumfolder"
 				PlexNotification
 				logheader="$logheaderstart"
-				
+
 				if [ ! -d /config/logs/downloads ]; then
 					mkdir -p /config/logs/downloads
 				fi
-				
+
 				if [ ! -f /config/logs/downloads/$deezeralbumid ]; then
 					touch /config/logs/downloads/$deezeralbumid
 				fi
@@ -1336,7 +1336,7 @@ WantedMode () {
 		albumartistname=$(echo "${lidarralbumdata}"| jq -r '.[].artist.artistName')
 		logheader="$currentprocess of $missinglisttotal :: $albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
 		filelogheader="$albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
-		
+
 		if [ -f "/config/logs/searched/$albumreleasegroupmbzid" ]; then
 			log "$logheader :: PREVOUSLY SEARCHED, SKIPPING..."
 			continue
@@ -1470,7 +1470,7 @@ WantedMode () {
 		fi
 
 		if [ -z "$albumdeezerurl" ]; then
-			
+
 			if [[ "$albumartistname" != "Various Artists" && "$SearchType" != "fuzzy" ]]; then
 				if [ -z "${albumartistlistlinkid}" ]; then
 					mbjson=$(curl -s -A "$agent" "${MBRAINZMIRROR}/ws/2/artist/${albumartistmbzid}?inc=url-rels&fmt=json")
@@ -1493,7 +1493,7 @@ WantedMode () {
 						else
 							albumsdata=$(cat /config/cache/artists/$artistid/albumlist.json)
 						fi
-						
+
 						if [ ! -f /config/cache/artists/$artistid/albumlistlower.json ]; then
 							log "$logheader :: Building Lowercase Album List..."
 							albumsdatalower=$(jq -s '.' /config/cache/artists/$artistid/albums/*-lower.json)
@@ -1514,14 +1514,14 @@ WantedMode () {
 							firstlower=${first,,}
 							log "$logheader :: Filtering out Titles not containing \"$first\" and Track Count: $albumtrackcount"
 							DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.nb_tracks==$albumtrackcount) | .id" | wc -l)
-														
+
 							if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
 								log "$logheader :: ERROR :: No albums found..."
 								albumdeezerurl=""
 								continue
 							fi
 							DeezerArtistAlbumListAlbumID=($(echo "$albumsdatalower" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.nb_tracks==$albumtrackcount) | .id"))
-							
+
 							log "$logheader :: Checking $DeezerArtistAlbumListSortTotal Albums for match ($albumtitle) with Max Distance Score of 2 or less"
 							for id in ${!DeezerArtistAlbumListAlbumID[@]}; do
 								currentprocess=$(( $id + 1 ))
@@ -1558,12 +1558,12 @@ WantedMode () {
 								albummbid=""
 								ablumrecordreleasedata=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.foreignReleaseId==\"$ablumrecordreleaseid\")")
 								albumtitle="$(echo "$ablumrecordreleasedata" | jq -r '.title')"
-								albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')								
+								albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')
 								first=${albumtitle%% *}
 								firstlower=${first,,}
 								log "$logheader :: Filtering out Titles not containing \"$first\" and Track Count: $albumtrackcount"
 								DeezerArtistAlbumListSortTotal=$(echo "$albumsdatalower" | jq -r "sort_by(.nb_tracks) | sort_by(.explicit_lyrics and .nb_tracks) | reverse | .[] | select(.title | contains(\"$firstlower\")) | select(.nb_tracks==$albumtrackcount) | .id" | wc -l)
-															
+
 								if [ "$DeezerArtistAlbumListSortTotal" == "0" ]; then
 									log "$logheader :: ERROR :: No albums found..."
 									albumdeezerurl=""
@@ -1634,7 +1634,7 @@ WantedMode () {
 					ablumrecordreleaseid=${lidarralbumdrecordids[$id]}
 					ablumrecordreleasedata=$(echo "${lidarralbumdata}" | jq -r ".[] | .releases | .[] | select(.foreignReleaseId==\"$ablumrecordreleaseid\")")
 					albumtitle="$(echo "$ablumrecordreleasedata" | jq -r '.title')"
-					albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')	
+					albumtrackcount=$(echo "$ablumrecordreleasedata" | jq -r '.trackCount')
 					albummbid=""
 					albumtitlecleans="$(echo "$albumtitle" | sed -e "s%[^[:alpha:][:digit:]._()' -]% %g" -e "s/  */ /g")"
 					albumclean="$(echo "$albumtitle" | sed -e "s%[^[:alpha:][:digit:]._()' -]% %g" -e "s/  */ /g")"
@@ -1847,10 +1847,10 @@ WantedMode () {
 		if [ "$explicit" == "true" ]; then
 			log "$logheader :: Explicit Release Found"
 		fi
-	
+
 		albumbimportfolder="$DOWNLOADS/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
 		albumbimportfoldername="$(basename "$albumbimportfolder")"
-		
+
 		if [ -f "/config/logs/download.log" ]; then
 			if cat "/config/logs/download.log" | grep -i "$albumreleasegroupmbzid :: $albumtitle :: $albumbimportfolder" | read; then
 				log "$logheader :: Already Downloaded"
@@ -1912,13 +1912,13 @@ WantedMode () {
 				touch /config/logs/downloads/$albumdeezerid
 			fi
 		fi
-		
+
 		if [ $ENABLEPOSTPROCESSING == true ]; then
 			TagFix
 			Conversion
 			AddReplaygainTags
 		fi
-		
+
 		if [ ! -d "$DOWNLOADS/amd/import" ]; then
 			mkdir -p "$DOWNLOADS/amd/import"
 			chmod $FolderPermissions "$DOWNLOADS/amd/import"
@@ -1994,7 +1994,7 @@ TagFix () {
 				fi
 				if [ ! -z "$albummbid" ]; then
 					metaflac "$fname" --set-tag=MUSICBRAINZ_ALBUMID="$albummbid"
-				fi				
+				fi
 				log "$logheader :: FIXING TAGS :: $filename fixed..."
 			done
 		fi
