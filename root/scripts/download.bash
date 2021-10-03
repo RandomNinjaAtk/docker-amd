@@ -226,7 +226,7 @@ Configuration () {
 	fi
 
 	if [ "$DOWNLOADMODE" == "artist" ]; then
-		log "Audio: Dowload Mode: $DOWNLOADMODE (Archives all albums by artist)"
+		log "Audio: Download Mode: $DOWNLOADMODE (Archives all albums by artist)"
 		wantit=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/rootFolder")
 		path=($(echo "${wantit}" | jq -r ".[].path"))
 		for id in ${!path[@]}; do
@@ -285,7 +285,7 @@ Configuration () {
 	fi
 
 	if [ "$DOWNLOADMODE" == "wanted" ]; then
-		log "Audio: Dowload Mode: $DOWNLOADMODE (Processes monitored albums)"
+		log "Audio: Download Mode: $DOWNLOADMODE (Processes monitored albums)"
 		if [ "$LIST" == "both" ]; then
 			log "Audio: Wanted List Type: Both (missing & cutoff)"
 		elif [ "$LIST" == "missing" ]; then
