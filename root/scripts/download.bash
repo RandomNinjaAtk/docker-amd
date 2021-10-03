@@ -1133,7 +1133,7 @@ ArtistMode () {
 						albumartistname="$variousartistname"
 						albumartistmbzid="89ad4ac3-39f7-470e-963a-56509c546377"
 					else
-						log "$logheader :: Arist ID does not match, skipping..."
+						log "$logheader :: Artist ID does not match, skipping..."
 						logheader="$logheaderstart"
 						continue
 					fi
@@ -1222,7 +1222,7 @@ ArtistMode () {
 					fi
 
 					if find "$LidArtistPath" -iname "* ($deezeralbumid)" | read; then
-						log "$logheader :: Alaready Downloaded..."
+						log "$logheader :: Already Downloaded..."
 						logheader="$logheaderstart"
 						continue
 					fi
