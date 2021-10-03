@@ -1336,7 +1336,7 @@ WantedMode () {
 		filelogheader="$albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
 
 		if [ -f "/config/logs/searched/$albumreleasegroupmbzid" ]; then
-			log "$logheader :: PREVOUSLY SEARCHED, SKIPPING..."
+			log "$logheader :: PREVIOUSLY SEARCHED, SKIPPING..."
 			continue
 		fi
 
@@ -1405,13 +1405,13 @@ WantedMode () {
 		fi
 
 		if [ -f "/config/logs/searched/$albumreleasegroupmbzid" ]; then
-			log "$logheader :: PREVOUSLY SEARCHED, SKIPPING..."
+			log "$logheader :: PREVIOUSLY SEARCHED, SKIPPING..."
 			continue
 		fi
 
 		if [[ -f "/config/logs/notfound.log" && $error == 1 ]]; then
 			if cat "/config/logs/notfound.log" | grep -i ":: $albumreleasegroupmbzid ::" | read; then
-				log "$logheader :: PREVOUSLY NOT FOUND SKIPPING..."
+				log "$logheader :: PREVIOUSLY NOT FOUND SKIPPING..."
 				if [ ! -d "/config/logs/searched" ]; then
 					mkdir -p "/config/logs/searched"
 				fi
@@ -1420,7 +1420,7 @@ WantedMode () {
 				fi
 				continue
 			elif [ -f "/config/logs/searched/$albumreleasegroupmbzid" ]; then
-				log "$logheader :: PREVOUSLY SEARCHED, SKIPPING..."
+				log "$logheader :: PREVIOUSLY SEARCHED, SKIPPING..."
 				continue
 			else
 				log "$logheader :: SEARCHING..."
