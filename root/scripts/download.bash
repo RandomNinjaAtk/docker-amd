@@ -264,7 +264,7 @@ Configuration () {
 						error=1
 					fi
 				else
-					log "ERROR: No Plex Library found containg path \"$folder\""
+					log "ERROR: No Plex Library found containing path \"$folder\""
 					log "ERROR: Add \"$folder\" as a folder to a Plex Music Library or Disable NOTIFYPLEX"
 					error=1
 				fi
@@ -552,7 +552,7 @@ FlacConvert () {
 	fi
 
 	if [ "$converterror" == "1" ]; then
-		log "$logheader :: CONVERSION :: ERROR :: Coversion Failed: $filename, performing cleanup..."
+		log "$logheader :: CONVERSION :: ERROR :: Conversion Failed: $filename, performing cleanup..."
 		rm "${fname%.flac}.temp.$extension"
 		continue
 	elif [ -f "${fname%.flac}.temp.$extension" ]; then
@@ -781,7 +781,7 @@ MP3Convert () {
 	fi
 
 	if [ "$converterror" == "1" ]; then
-		log "$logheader :: CONVERSION :: ERROR :: Coversion Failed: $filename, performing cleanup..."
+		log "$logheader :: CONVERSION :: ERROR :: Conversion Failed: $filename, performing cleanup..."
 		rm "${fname%.mp3}.temp.$extension"
 		continue
 	elif [ -f "${fname%.mp3}.temp.$extension" ]; then
