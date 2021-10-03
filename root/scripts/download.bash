@@ -226,7 +226,7 @@ Configuration () {
 	fi
 
 	if [ "$DOWNLOADMODE" == "artist" ]; then
-		log "Audio: Dowload Mode: $DOWNLOADMODE (Archives all albums by artist)"
+		log "Audio: Download Mode: $DOWNLOADMODE (Archives all albums by artist)"
 		wantit=$(curl -s --header "X-Api-Key:"${LidarrAPIkey} --request GET  "$LidarrUrl/api/v1/rootFolder")
 		path=($(echo "${wantit}" | jq -r ".[].path"))
 		for id in ${!path[@]}; do
@@ -264,7 +264,7 @@ Configuration () {
 						error=1
 					fi
 				else
-					log "ERROR: No Plex Library found containg path \"$folder\""
+					log "ERROR: No Plex Library found containing path \"$folder\""
 					log "ERROR: Add \"$folder\" as a folder to a Plex Music Library or Disable NOTIFYPLEX"
 					error=1
 				fi
@@ -285,7 +285,7 @@ Configuration () {
 	fi
 
 	if [ "$DOWNLOADMODE" == "wanted" ]; then
-		log "Audio: Dowload Mode: $DOWNLOADMODE (Processes monitored albums)"
+		log "Audio: Download Mode: $DOWNLOADMODE (Processes monitored albums)"
 		if [ "$LIST" == "both" ]; then
 			log "Audio: Wanted List Type: Both (missing & cutoff)"
 		elif [ "$LIST" == "missing" ]; then
@@ -552,7 +552,7 @@ FlacConvert () {
 	fi
 
 	if [ "$converterror" == "1" ]; then
-		log "$logheader :: CONVERSION :: ERROR :: Coversion Failed: $filename, performing cleanup..."
+		log "$logheader :: CONVERSION :: ERROR :: Conversion Failed: $filename, performing cleanup..."
 		rm "${fname%.flac}.temp.$extension"
 		continue
 	elif [ -f "${fname%.flac}.temp.$extension" ]; then
@@ -781,7 +781,7 @@ MP3Convert () {
 	fi
 
 	if [ "$converterror" == "1" ]; then
-		log "$logheader :: CONVERSION :: ERROR :: Coversion Failed: $filename, performing cleanup..."
+		log "$logheader :: CONVERSION :: ERROR :: Conversion Failed: $filename, performing cleanup..."
 		rm "${fname%.mp3}.temp.$extension"
 		continue
 	elif [ -f "${fname%.mp3}.temp.$extension" ]; then
@@ -1133,7 +1133,7 @@ ArtistMode () {
 						albumartistname="$variousartistname"
 						albumartistmbzid="89ad4ac3-39f7-470e-963a-56509c546377"
 					else
-						log "$logheader :: Arist ID does not match, skipping..."
+						log "$logheader :: Artist ID does not match, skipping..."
 						logheader="$logheaderstart"
 						continue
 					fi
@@ -1222,7 +1222,7 @@ ArtistMode () {
 					fi
 
 					if find "$LidArtistPath" -iname "* ($deezeralbumid)" | read; then
-						log "$logheader :: Alaready Downloaded..."
+						log "$logheader :: Already Downloaded..."
 						logheader="$logheaderstart"
 						continue
 					fi
@@ -1336,7 +1336,7 @@ WantedMode () {
 		filelogheader="$albumartistname :: $albumreleaseyear :: $lidarralbumtype :: $albumtitle"
 
 		if [ -f "/config/logs/searched/$albumreleasegroupmbzid" ]; then
-			log "$logheader :: PREVOUSLY SEARCHED, SKIPPING..."
+			log "$logheader :: PREVIOUSLY SEARCHED, SKIPPING..."
 			continue
 		fi
 
@@ -1405,13 +1405,13 @@ WantedMode () {
 		fi
 
 		if [ -f "/config/logs/searched/$albumreleasegroupmbzid" ]; then
-			log "$logheader :: PREVOUSLY SEARCHED, SKIPPING..."
+			log "$logheader :: PREVIOUSLY SEARCHED, SKIPPING..."
 			continue
 		fi
 
 		if [[ -f "/config/logs/notfound.log" && $error == 1 ]]; then
 			if cat "/config/logs/notfound.log" | grep -i ":: $albumreleasegroupmbzid ::" | read; then
-				log "$logheader :: PREVOUSLY NOT FOUND SKIPPING..."
+				log "$logheader :: PREVIOUSLY NOT FOUND SKIPPING..."
 				if [ ! -d "/config/logs/searched" ]; then
 					mkdir -p "/config/logs/searched"
 				fi
@@ -1420,7 +1420,7 @@ WantedMode () {
 				fi
 				continue
 			elif [ -f "/config/logs/searched/$albumreleasegroupmbzid" ]; then
-				log "$logheader :: PREVOUSLY SEARCHED, SKIPPING..."
+				log "$logheader :: PREVIOUSLY SEARCHED, SKIPPING..."
 				continue
 			else
 				log "$logheader :: SEARCHING..."
