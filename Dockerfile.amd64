@@ -35,6 +35,7 @@ RUN apk add --no-cache \
 	eyed3 \
     	opus-tools \
 	python3 \
+	findutils \
 	py3-pip \
   musl-dev \
   gcc \
