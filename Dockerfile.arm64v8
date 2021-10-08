@@ -42,16 +42,17 @@ RUN apk add --no-cache \
     ca-certificates \
     curl \
     jq \
-	flac \
-	eyed3 \
+    findutils \
+    flac \
+    eyed3 \
     opus-tools \
-	python3 \
-  py3-pip \
-  musl-dev \
-  gcc \
+    python3 \
+    py3-pip \
+    musl-dev \
+    gcc \
     ffmpeg && \
     echo "************ install python packages ************" && \
-	pip install \
+    pip install \
       --no-index \
       --find-links=/root/wheels \
 		yq \
