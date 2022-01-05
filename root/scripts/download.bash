@@ -12,7 +12,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.482"
+	log "####### SCRIPT VERSION 1.5.483"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1455,7 +1455,7 @@ WantedMode () {
 				albumbimportfolder="$LIDARRREMOTEPATH/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
 				albumbimportfoldername="$(basename "$albumbimportfolder")"
 			fi
-			LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${albumbimportfolder}\"}")
+			LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} -H "Content-Type: application/json" --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${albumbimportfolder}\"}")
 			log "$logheader :: LIDARR IMPORT NOTIFICATION SENT! :: $albumbimportfoldername"
 			continue
 		fi
@@ -1934,7 +1934,7 @@ WantedMode () {
 			albumbimportfolder="$LIDARRREMOTEPATH/amd/import/$artistclean - $albumclean ($albumreleaseyear)-WEB-$lidarralbumtype-deemix"
 			albumbimportfoldername="$(basename "$albumbimportfolder")"
 		fi
-		LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${albumbimportfolder}\"}")
+		LidarrProcessIt=$(curl -s "$LidarrUrl/api/v1/command" --header "X-Api-Key:"${LidarrAPIkey} -H "Content-Type: application/json" --data "{\"name\":\"DownloadedAlbumsScan\", \"path\":\"${albumbimportfolder}\"}")
 		log "$logheader :: LIDARR IMPORT NOTIFICATION SENT! :: $albumbimportfoldername"
 	done
 	echo "####### DOWNLOAD AUDIO COMPLETE"
