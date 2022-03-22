@@ -12,7 +12,7 @@ Configuration () {
 	log ""
 	sleep 2
 	log "####### $TITLE"
-	log "####### SCRIPT VERSION 1.5.483"
+	log "####### SCRIPT VERSION 1.5.484"
 	log "####### DOCKER VERSION $VERSION"
 	log "####### CONFIGURATION VERIFICATION"
 	error=0
@@ -1874,6 +1874,17 @@ WantedMode () {
 			if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 				DownloadQualityCheck
 			fi
+			
+			downloadcount=$(find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | wc -l)
+
+			if [ "$albumtrackcount" != "$downloadcount" ]; then
+				log "$logheader :: DOWNLOAD :: ERROR :: Downloaded track count ($downloadcount) does not match requested track count ($albumtrackcount), skipping..."
+				rm "$DOWNLOADS"/amd/dlclient/*
+				continue
+			else
+				log "$logheader :: DOWNLOAD :: $downloadcount Tracks found!"
+			fi
+			
 			if find "$DOWNLOADS"/amd/dlclient -regex ".*/.*\.\(flac\|mp3\)" | read; then
 				chmod $FilePermissions "$DOWNLOADS"/amd/dlclient/*
 				chown -R abc:abc "$DOWNLOADS"/amd/dlclient
