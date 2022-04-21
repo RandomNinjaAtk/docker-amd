@@ -49,7 +49,13 @@ else
     #MANIFEST_TOOL_VERSION=$(curl -s https://api.github.com/repos/estesp/manifest-tool/tags  | grep 'name.*v[0-9]' | head -n 1 | cut -d '"' -f 4)
     # release:
     MANIFEST_TOOL_VERSION=$(curl -s https://api.github.com/repos/estesp/manifest-tool/releases/latest | grep 'tag_name' | cut -d\" -f4)
-    curl -L https://github.com/estesp/manifest-tool/releases/download/$MANIFEST_TOOL_VERSION/manifest-tool-$IMAGE_OS-$HOST_ARCH_ALIAS -o manifest-tool
+    curl -L \
+        --connect-timeout 5 \
+        --max-time 10 \
+        --retry 5 \
+        --retry-delay 0 \
+        --retry-max-time 40 \
+        "https://github.com/estesp/manifest-tool/releases/download/$MANIFEST_TOOL_VERSION/manifest-tool-$IMAGE_OS-$HOST_ARCH_ALIAS" -o manifest-tool
     chmod +x manifest-tool
     #./manifest-tool push from-args --platforms ${PLATFORMS_ARCH} --template ${IMAGE_NAME} --target ${IMAGE_NAME}
     ./manifest-tool push from-spec manifest.yaml
