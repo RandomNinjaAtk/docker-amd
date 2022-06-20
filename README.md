@@ -1,3 +1,8 @@
+# Deprecated
+
+This repository is now deprecated, will no longer be updated and is being archived. Please visit the new project/replacement:
+* https://github.com/linuxserver/docker-lidarr-extended
+
 # AMD - Automated Music Downloader 
 [![Docker Build](https://img.shields.io/docker/cloud/automated/randomninjaatk/amd?style=flat-square)](https://hub.docker.com/r/randomninjaatk/amd)
 [![Docker Pulls](https://img.shields.io/docker/pulls/randomninjaatk/amd?style=flat-square)](https://hub.docker.com/r/randomninjaatk/amd)
