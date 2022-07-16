@@ -1,18 +1,12 @@
 # Deprecated
 
 This repository is now deprecated, will no longer be updated and is being archived. Please visit the new project/replacement:
-* [https://github.com/linuxserver/docker-lidarr-extended](https://github.com/RandomNinjaAtk/docker-lidarr-extended)
+* [https://github.com/RandomNinjaAtk/docker-lidarr-extended](https://github.com/RandomNinjaAtk/docker-lidarr-extended)
 
 <br />
 <br />
 
 # AMD - Automated Music Downloader 
-[![Docker Build](https://img.shields.io/docker/cloud/automated/randomninjaatk/amd?style=flat-square)](https://hub.docker.com/r/randomninjaatk/amd)
-[![Docker Pulls](https://img.shields.io/docker/pulls/randomninjaatk/amd?style=flat-square)](https://hub.docker.com/r/randomninjaatk/amd)
-[![Docker Stars](https://img.shields.io/docker/stars/randomninjaatk/amd?style=flat-square)](https://hub.docker.com/r/randomninjaatk/amd)
-[![Docker Hub](https://img.shields.io/badge/Open%20On-DockerHub-blue?style=flat-square)](https://hub.docker.com/r/randomninjaatk/amd)
-[![Discord](https://img.shields.io/discord/747100476775858276.svg?style=flat-square&label=Discord&logo=discord)](https://discord.gg/JumQXDc "realtime support / chat with the community." )
-
 [RandomNinjaAtk/amd](https://github.com/RandomNinjaAtk/docker-amd) is a Lidarr companion script to automatically download music for Lidarr 
 
 [![RandomNinjaAtk/amd](https://raw.githubusercontent.com/RandomNinjaAtk/unraid-templates/master/randomninjaatk/img/amd.png)](https://github.com/RandomNinjaAtk/docker-amd)
